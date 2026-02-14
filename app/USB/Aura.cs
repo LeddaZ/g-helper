@@ -874,49 +874,47 @@ namespace GHelper.USB
             {
                 if (!backlight) return;
 
-                Dictionary<string, int> displayList = [];
-                int previousWidth = 0;
-                Screen.AllScreens.ToList().ForEach(screen =>
-                {
-                    displayList.Add(screen.DeviceName, screen.Bounds.Width + previousWidth);
-                    previousWidth += screen.Bounds.Width;
-                });
-                int width = displayList.TryGetValue($"\\\\.\\DISPLAY{ambientDisplayNumber}", out int w) ? w : 0;
-                Point p = new(width - 1, 0);
+                MonitorHelper.MonitorDetails monitor = MonitorHelper.GetMonitor(ambientDisplayNumber);
 
-                var bound = Screen.GetBounds(p);
+                Rectangle bound = new()
+                {
+                    X = monitor.Left,
+                    Y = monitor.Top,
+                    Width = monitor.PhysicalWidth,
+                    Height = monitor.PhysicalHeight
+                };
                 bound.Y += bound.Height / 3;
                 bound.Height -= (int)Math.Round(bound.Height * (0.33f + 0.022f)); // cut 1/3 of the top screen + windows panel
 
                 Bitmap screen_low = AmbientData.CamptureScreen(bound, 512, 288);   //quality decreases greatly if it is less 512 ;
-                Bitmap screeb_pxl = AmbientData.ResizeImage(screen_low, 4, 2);     // 4x2 zone. top for keyboard and bot for lightbar;
+                Bitmap screen_pxl = AmbientData.ResizeImage(screen_low, 4, 2);     // 4x2 zone. top for keyboard and bot for lightbar;
 
                 int zones = AURA_ZONES;
 
                 if (isStrix) // laptop with lightbar
                 {
-                    var mid_left = ColorUtils.GetMidColor(screeb_pxl.GetPixel(0, 1), screeb_pxl.GetPixel(1, 1));
-                    var mid_right = ColorUtils.GetMidColor(screeb_pxl.GetPixel(2, 1), screeb_pxl.GetPixel(3, 1));
+                    var mid_left = ColorUtils.GetMidColor(screen_pxl.GetPixel(0, 1), screen_pxl.GetPixel(1, 1));
+                    var mid_right = ColorUtils.GetMidColor(screen_pxl.GetPixel(2, 1), screen_pxl.GetPixel(3, 1));
 
-                    AmbientData.Colors[4].RGB = ColorUtils.HSV.UpSaturation(screeb_pxl.GetPixel(1, 1)); // left bck
+                    AmbientData.Colors[4].RGB = ColorUtils.HSV.UpSaturation(screen_pxl.GetPixel(1, 1)); // left bck
                     AmbientData.Colors[5].RGB = ColorUtils.HSV.UpSaturation(mid_left);  // center left
                     AmbientData.Colors[6].RGB = ColorUtils.HSV.UpSaturation(mid_right); // center right
-                    AmbientData.Colors[7].RGB = ColorUtils.HSV.UpSaturation(screeb_pxl.GetPixel(3, 1)); // right bck
+                    AmbientData.Colors[7].RGB = ColorUtils.HSV.UpSaturation(screen_pxl.GetPixel(3, 1)); // right bck
 
                     for (int i = 0; i < 4; i++) // keyboard
-                        AmbientData.Colors[i].RGB = ColorUtils.HSV.UpSaturation(screeb_pxl.GetPixel(i, 0));
+                        AmbientData.Colors[i].RGB = ColorUtils.HSV.UpSaturation(screen_pxl.GetPixel(i, 0));
                 }
                 else
                 {
                     zones = 1;
-                    AmbientData.Colors[0].RGB = ColorUtils.HSV.UpSaturation(ColorUtils.GetDominantColor(screeb_pxl), (float)0.3);
+                    AmbientData.Colors[0].RGB = ColorUtils.HSV.UpSaturation(ColorUtils.GetDominantColor(screen_pxl), (float)0.3);
                 }
 
-                //screen_low.Save("big.jpg", ImageFormat.Jpeg);
-                //screeb_pxl.Save("small.jpg", ImageFormat.Jpeg);
+                screen_low.Save("big.jpg", ImageFormat.Jpeg);
+                screen_pxl.Save("small.jpg", ImageFormat.Jpeg);
 
                 screen_low.Dispose();
-                screeb_pxl.Dispose();
+                screen_pxl.Dispose();
 
                 bool is_fresh = init;
 
