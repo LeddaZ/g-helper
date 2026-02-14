@@ -266,7 +266,7 @@ namespace GHelper
             TopMost = AppConfig.Is("topmost");
 
             //This will auto position the window again when it resizes. Might mess with position if people drag the window somewhere else.
-            this.Resize += SettingsForm_Resize;
+            //this.Resize += SettingsForm_Resize;
 
             VisualiseFnLock();
             buttonFnLock.Click += ButtonFnLock_Click;
