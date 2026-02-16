@@ -15,8 +15,28 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-    <AssemblyVersion>0.239</AssemblyVersion>
+    <BaseVersion>0</BaseVersion>
+	<GenerateAssemblyInfo>true</GenerateAssemblyInfo>
   </PropertyGroup>
+  
+  <Target Name="SetVersionFromGit" BeforeTargets="PrepareForBuild">
+    <Exec Command="git rev-list --count HEAD" ConsoleToMSBuild="true" StandardOutputImportance="low">
+      <Output TaskParameter="ConsoleOutput" PropertyName="GitCommitCount" />
+    </Exec>
+
+    <Exec Command="git rev-parse --short HEAD" ConsoleToMSBuild="true" StandardOutputImportance="low">
+      <Output TaskParameter="ConsoleOutput" PropertyName="GitCommitHash" />
+    </Exec>
+
+    <PropertyGroup>
+      <Version>$(BaseVersion).$(GitCommitCount)</Version>
+      <AssemblyVersion>$(Version).0</AssemblyVersion>
+      <FileVersion>$(Version).0</FileVersion>
+      <InformationalVersion>$(Version)+$(GitCommitHash)</InformationalVersion>
+    </PropertyGroup>
+
+    <Message Text="Version set to: $(Version)" Importance="high" />
+  </Target>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DebugType>embedded</DebugType>
