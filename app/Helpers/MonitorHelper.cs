@@ -65,8 +65,7 @@ namespace GHelper.Helpers
 
             MonitorDetails? monitor = monitors.FirstOrDefault(m => m.DeviceName.Equals($"\\\\.\\DISPLAY{number}"));
 
-            return monitor ?? throw new ArgumentException($"Monitor with device name \\\\.\\DISPLAY{number} not found.",
-                    nameof(number));
+            return monitor ?? monitors.FirstOrDefault(m => m.DeviceName.Equals($"\\\\.\\DISPLAY1"));
         }
 
         public static List<MonitorDetails> GetAllMonitors()
