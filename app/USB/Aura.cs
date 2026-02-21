@@ -910,8 +910,8 @@ namespace GHelper.USB
                     AmbientData.Colors[0].RGB = ColorUtils.HSV.UpSaturation(ColorUtils.GetDominantColor(screen_pxl), (float)0.3);
                 }
 
-                screen_low.Save("big.jpg", ImageFormat.Jpeg);
-                screen_pxl.Save("small.jpg", ImageFormat.Jpeg);
+                //screen_low.Save("big.jpg", ImageFormat.Jpeg);
+                //screen_pxl.Save("small.jpg", ImageFormat.Jpeg);
 
                 screen_low.Dispose();
                 screen_pxl.Dispose();
