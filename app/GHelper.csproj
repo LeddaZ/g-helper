@@ -17,6 +17,7 @@
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <BaseVersion>0</BaseVersion>
 	<GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <AssemblyVersion>0.240</AssemblyVersion>
   </PropertyGroup>
   
   <Target Name="SetVersionFromGit" BeforeTargets="PrepareForBuild">
