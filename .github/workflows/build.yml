@@ -2,7 +2,7 @@ name: Build and Release
 
 on:
   push:
-    branches: [ fork ]
+    branches: [fork]
   workflow_dispatch:
 
 permissions:
@@ -12,85 +12,85 @@ jobs:
   build:
     runs-on: windows-2022
     steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-    
-    - name: Check for new commits since last release
-      id: check_commits
-      shell: bash
-      run: |
-        LATEST_TAG=$(git tag -l "v*" --sort=-v:refname | head -n 1)
-        
-        if [ -z "$LATEST_TAG" ]; then
-          echo "No previous release found, will create first release"
-          echo "has_new_commits=true" >> $GITHUB_OUTPUT
-          echo "changelog=Initial release" >> $GITHUB_OUTPUT
-        else
-          echo "Latest tag: $LATEST_TAG"
-          
-          COMMITS=$(git log ${LATEST_TAG}..HEAD --pretty=format:"- %s (%h)" --no-merges)
-          
-          if [ -z "$COMMITS" ]; then
-            echo "No new commits since last release"
-            echo "has_new_commits=false" >> $GITHUB_OUTPUT
-          else
-            echo "New commits found:"
-            echo "$COMMITS"
-            echo "has_new_commits=true" >> $GITHUB_OUTPUT
-            echo "$COMMITS" > changelog.txt
-          fi
-        fi
-    
-    - name: Setup dotnet
-      if: steps.check_commits.outputs.has_new_commits == 'true'
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: '8.0.x'
-    
-    - name: Publish
-      if: steps.check_commits.outputs.has_new_commits == 'true'
-      run: |
-        dotnet publish app/GHelper.sln --configuration Release --runtime win-x64 -p:PublishSingleFile=true --no-self-contained
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-    - name: Create ZIP from signed EXE
-      if: steps.check_commits.outputs.has_new_commits == 'true'
-      run: powershell Compress-Archive ./app/bin/x64/Release/net8.0-windows/win-x64/publish/GHelper.exe ./app/bin/x64/Release/net8.0-windows/win-x64/publish/GHelper.zip
-    
-    - name: Generate release tag
-      if: steps.check_commits.outputs.has_new_commits == 'true'
-      id: generate_tag
-      shell: bash
-      run: |
-        COMMIT_COUNT=$(git rev-list --count HEAD)
-        TAG="v0.$COMMIT_COUNT"
-        echo "tag=$TAG" >> $GITHUB_OUTPUT
-        echo "Generated tag: $TAG (based on $COMMIT_COUNT total commits)"
-    
-    - name: Read changelog
-      if: steps.check_commits.outputs.has_new_commits == 'true'
-      id: read_changelog
-      shell: bash
-      run: |
-        if [ -f changelog.txt ]; then
-          CHANGELOG=$(cat changelog.txt)
-        else
-          CHANGELOG="Initial release"
-        fi
-        echo "changelog<<EOF" >> $GITHUB_OUTPUT
-        echo "$CHANGELOG" >> $GITHUB_OUTPUT
-        echo "EOF" >> $GITHUB_OUTPUT
-    
-    - name: Create Release
-      if: steps.check_commits.outputs.has_new_commits == 'true'
-      uses: softprops/action-gh-release@v1
-      with:
-        tag_name: ${{ steps.generate_tag.outputs.tag }}
-        name: Release ${{ steps.generate_tag.outputs.tag }}
-        body: |
-          ${{ steps.read_changelog.outputs.changelog }}
-        files: app/bin/x64/Release/net8.0-windows/win-x64/publish/GHelper.zip
-        draft: false
-        prerelease: false
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check for new commits since last release
+        id: check_commits
+        shell: bash
+        run: |
+          LATEST_TAG=$(git tag -l "v*" --sort=-v:refname | head -n 1)
+
+          if [ -z "$LATEST_TAG" ]; then
+            echo "No previous release found, will create first release"
+            echo "has_new_commits=true" >> $GITHUB_OUTPUT
+            echo "changelog=Initial release" >> $GITHUB_OUTPUT
+          else
+            echo "Latest tag: $LATEST_TAG"
+
+            COMMITS=$(git log ${LATEST_TAG}..HEAD --pretty=format:"- %s (%h)" --no-merges)
+
+            if [ -z "$COMMITS" ]; then
+              echo "No new commits since last release"
+              echo "has_new_commits=false" >> $GITHUB_OUTPUT
+            else
+              echo "New commits found:"
+              echo "$COMMITS"
+              echo "has_new_commits=true" >> $GITHUB_OUTPUT
+              echo "$COMMITS" > changelog.txt
+            fi
+          fi
+
+      - name: Setup dotnet
+        if: steps.check_commits.outputs.has_new_commits == 'true'
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Publish
+        if: steps.check_commits.outputs.has_new_commits == 'true'
+        run: |
+          dotnet publish app/GHelper.sln --configuration Release --runtime win-x64 -p:PublishSingleFile=true --no-self-contained
+
+      - name: Create ZIP from EXE
+        if: steps.check_commits.outputs.has_new_commits == 'true'
+        run: powershell Compress-Archive ./app/bin/x64/Release/net8.0-windows/win-x64/publish/GHelper.exe ./app/bin/x64/Release/net8.0-windows/win-x64/publish/GHelper.zip
+
+      - name: Generate release tag
+        if: steps.check_commits.outputs.has_new_commits == 'true'
+        id: generate_tag
+        shell: bash
+        run: |
+          COMMIT_COUNT=$(git rev-list --count HEAD)
+          TAG="v0.$COMMIT_COUNT"
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "Generated tag: $TAG (based on $COMMIT_COUNT total commits)"
+
+      - name: Read changelog
+        if: steps.check_commits.outputs.has_new_commits == 'true'
+        id: read_changelog
+        shell: bash
+        run: |
+          if [ -f changelog.txt ]; then
+            CHANGELOG=$(cat changelog.txt)
+          else
+            CHANGELOG="Initial release"
+          fi
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        if: steps.check_commits.outputs.has_new_commits == 'true'
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.generate_tag.outputs.tag }}
+          name: Release ${{ steps.generate_tag.outputs.tag }}
+          body: |
+            ${{ steps.read_changelog.outputs.changelog }}
+          files: app/bin/x64/Release/net8.0-windows/win-x64/publish/GHelper.zip
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
