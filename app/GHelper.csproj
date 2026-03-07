@@ -15,9 +15,9 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-    <BaseVersion>0</BaseVersion>
+    <AssemblyVersion>0.241</AssemblyVersion>
+	<BaseVersion>0</BaseVersion>
 	<GenerateAssemblyInfo>true</GenerateAssemblyInfo>
-    <AssemblyVersion>0.240</AssemblyVersion>
   </PropertyGroup>
   
   <Target Name="SetVersionFromGit" BeforeTargets="PrepareForBuild">
