@@ -86,6 +86,7 @@ namespace GHelper.USB
 
         private static bool backlight = false;
         private static bool initDirect = false;
+        public static bool sessionLock = false;
 
         public static Color Color1 = Color.White;
         public static Color Color2 = Color.Black;
@@ -730,8 +731,9 @@ namespace GHelper.USB
             if (Mode == AuraMode.HEATMAP)
             {
                 CustomRGB.ApplyHeatmap(true);
-                timer.Enabled = true;
                 timer.Interval = 2000;
+                timer.Stop();
+                timer.Start();
                 return;
             }
 
@@ -796,7 +798,7 @@ namespace GHelper.USB
             int _speed = (Speed == AuraSpeed.Normal) ? 0xeb : (Speed == AuraSpeed.Fast) ? 0xf5 : 0xe1;
             int _direction = (Direction == AuraDirection.Right) ? 0x00 : (Direction == AuraDirection.Left) ? 0x01 : (Direction == AuraDirection.Up) ? 0x02 : 0x03;
             AsusHid.Write(new List<byte[]> { AuraMessage(Mode, _Color1, _Color2, _speed, _direction, isSingleColor), MESSAGE_SET, MESSAGE_APPLY });
-
+            XGM.LightMode(Mode, _Color1, _Color2, _speed, _direction);
 
             if (isACPI)
                 Program.acpi.TUFKeyboardRGB(Mode, Color1, _speed);
@@ -902,7 +904,7 @@ namespace GHelper.USB
 
             public static void ApplyAmbient(bool init = false)
             {
-                if (!backlight) return;
+                if (!backlight || sessionLock) return;
 
                 MonitorHelper.MonitorDetails monitor = MonitorHelper.GetMonitor(ambientDisplayNumber);
 
