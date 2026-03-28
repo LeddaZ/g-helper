@@ -15,11 +15,11 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-    <AssemblyVersion>0.241</AssemblyVersion>
+    <AssemblyVersion>0.242</AssemblyVersion>
 	<BaseVersion>0</BaseVersion>
 	<GenerateAssemblyInfo>true</GenerateAssemblyInfo>
   </PropertyGroup>
-  
+
   <Target Name="SetVersionFromGit" BeforeTargets="PrepareForBuild">
     <Exec Command="git rev-list --count HEAD" ConsoleToMSBuild="true" StandardOutputImportance="low">
       <Output TaskParameter="ConsoleOutput" PropertyName="GitCommitCount" />
