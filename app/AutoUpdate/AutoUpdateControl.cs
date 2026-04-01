@@ -68,7 +68,7 @@ namespace GHelper.AutoUpdate
             try
             {
                 using HttpClient httpClient = new();
-                httpClient.DefaultRequestHeaders.Add("User-Agent", "C# App");
+                httpClient.DefaultRequestHeaders.Add("User-Agent", "G-Helper App");
                 string json = await httpClient.GetStringAsync("https://api.github.com/repos/LeddaZ/g-helper/releases/latest");
                 JsonElement config = JsonSerializer.Deserialize<JsonElement>(json);
                 string tag = config.GetProperty("tag_name").ToString().Replace("v", "");
