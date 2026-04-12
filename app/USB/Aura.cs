@@ -91,6 +91,14 @@ namespace GHelper.USB
         public static Color Color1 = Color.White;
         public static Color Color2 = Color.Black;
 
+        public static Color RearColor = Color.White;
+        private static AuraMode rearMode = AuraMode.AuraStatic;
+        public static AuraMode RearMode
+        {
+            get { return rearMode; }
+            set { rearMode = GetModes().ContainsKey(value) ? value : AuraMode.AuraStatic; }
+        }
+
         static bool isACPI = AppConfig.IsTUF() || AppConfig.IsVivoZenPro();
         static bool isStrix = AppConfig.IsAdvancedRGB() && !AppConfig.IsNoDirectRGB();
 
@@ -229,6 +237,19 @@ namespace GHelper.USB
             return _modes;
         }
 
+        private static Dictionary<AuraMode, string> _modesRear = new Dictionary<AuraMode, string>
+        {
+            { AuraMode.AuraStatic, Properties.Strings.AuraStatic },
+            { AuraMode.AuraBreathe, Properties.Strings.AuraBreathe },
+            { AuraMode.AuraColorCycle, Properties.Strings.AuraColorCycle },
+            { AuraMode.AuraRainbow, Properties.Strings.AuraRainbow },
+            { AuraMode.AuraStrobe, Properties.Strings.AuraStrobe },
+        };
+
+        public static Dictionary<AuraMode, string> GetRearModes()
+        {
+            return _modesRear;
+        }
         public static AuraMode Mode
         {
             get { return mode; }
@@ -265,6 +286,11 @@ namespace GHelper.USB
         public static void SetColor2(int colorCode)
         {
             Color2 = Color.FromArgb(colorCode);
+        }
+
+        public static void SetRearColor(int colorCode)
+        {
+            RearColor = Color.FromArgb(colorCode);
         }
 
         public static bool HasSecondColor()
@@ -705,9 +731,20 @@ namespace GHelper.USB
             return Color.FromArgb((int)(Color.R * colorDim), (int)(Color.G * colorDim), (int)(Color.B * colorDim));
         }
 
+        public static void ApplyRearLight()
+        {
+            if (!AppConfig.HasRearLight()) return;
+
+            RearMode = (AuraMode)AppConfig.Get("rear_mode");
+            SetRearColor(AppConfig.Get("rear_color"));
+
+            int _speed = (Speed == AuraSpeed.Normal) ? 0xeb : (Speed == AuraSpeed.Fast) ? 0xf5 : 0xe1;
+            int _direction = (Direction == AuraDirection.Right) ? 0x00 : (Direction == AuraDirection.Left) ? 0x01 : (Direction == AuraDirection.Up) ? 0x02 : 0x03;
+            AsusHid.Write(new List<byte[]> { AuraMessage(RearMode, RearColor, RearColor, _speed, _direction), MESSAGE_SET, MESSAGE_APPLY }, "Rear", AsusHid.REAR_LIGHT_PIDS);
+        }
+
         public static void ApplyAura()
         {
-
             Mode = (AuraMode)AppConfig.Get("aura_mode");
             Speed = (AuraSpeed)AppConfig.Get("aura_speed");
             Direction = (AuraDirection)AppConfig.Get("aura_direction");
@@ -801,6 +838,8 @@ namespace GHelper.USB
 
             if (isACPI)
                 Program.acpi.TUFKeyboardRGB(Mode, Color1, _speed);
+
+            ApplyRearLight();
 
         }
 
