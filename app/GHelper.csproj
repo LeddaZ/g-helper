@@ -15,7 +15,7 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-    <AssemblyVersion>0.244.0.0</AssemblyVersion>
+    <AssemblyVersion>0.245</AssemblyVersion>
 	<BaseVersion>0</BaseVersion>
 	<GenerateAssemblyInfo>true</GenerateAssemblyInfo>
   </PropertyGroup>
@@ -54,6 +54,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <DebugType>embedded</DebugType>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="logs\**" />
+    <EmbeddedResource Remove="logs\**" />
+    <None Remove="logs\**" />
+  </ItemGroup>
 
 
   <ItemGroup>

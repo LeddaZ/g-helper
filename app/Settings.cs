@@ -817,7 +817,7 @@ namespace GHelper
             contextMenuStrip.ShowCheckMargin = true;
             contextMenuStrip.ImageScalingSize = new Size(16, 16);
             contextMenuStrip.ShowImageMargin = false;
-            Padding padding = new Padding(15, 5, 5, 5);
+            Padding padding = new Padding(5, 5, 5, 5);
 
             var title = new ToolStripMenuItem(Properties.Strings.PerformanceMode);
             title.Margin = padding;
@@ -873,7 +873,7 @@ namespace GHelper
             contextMenuStrip.Items.Add(quit);
 
             //contextMenuStrip.ShowCheckMargin = true;
-            contextMenuStrip.RenderMode = ToolStripRenderMode.System;
+            contextMenuStrip.Renderer = new CustomMenuRenderer();
 
             InitContextMenuTheme();
 
@@ -1248,6 +1248,8 @@ namespace GHelper
             pictureColor2.BackColor = Aura.Color2;
             pictureColor2.Visible = Aura.HasSecondColor();
 
+            if (panelRearLight.Visible) pictureRearColor.BackColor = Aura.RearColor;
+
             bool dynamic = AppConfig.IsDynamicLighting() && DynamicLightingHelper.IsEnabled() && !AppConfig.IsDynamicLightingOnly();
 
             if (dynamic)
@@ -1581,7 +1583,7 @@ namespace GHelper
             string battery = "";
             string charge = "";
 
-            HardwareControl.ReadSensors();
+            await Task.Run(() => HardwareControl.ReadSensors());
             Task.Run((Action)PeripheralsProvider.RefreshBatteryForAllDevices);
 
             if (HardwareControl.cpuTemp > 0)
