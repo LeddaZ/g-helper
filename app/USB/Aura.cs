@@ -904,7 +904,7 @@ namespace GHelper.USB
                     colors[lightbarOrder[i]] = ColorUtils.GetWeightedAverage(Aura.Color2, Aura.Color1, t);
                 }
 
-                ApplyDirect(colors, true);
+                ApplyDirect(colors);
             }
 
             public static void ApplyGPUColor(int gpuMode = -1)
