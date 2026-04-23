@@ -249,8 +249,8 @@ namespace GHelper
             checkMatrix.Location = new Point(4, 0);
             checkMatrix.Margin = new Padding(4, 2, 4, 2);
             checkMatrix.Name = "checkMatrix";
-            checkMatrix.Padding = new Padding(0, 0, 6, 0);
-            checkMatrix.Size = new Size(127, 20);
+            checkMatrix.Padding = new Padding(0, 0, 5, 0);
+            checkMatrix.Size = new Size(252, 40);
             checkMatrix.TabIndex = 19;
             checkMatrix.Text = Properties.Strings.TurnOffOnBattery;
             checkMatrix.UseVisualStyleBackColor = true;
@@ -515,7 +515,7 @@ namespace GHelper
             buttonDonate.BorderRadius = 2;
             buttonDonate.Dock = DockStyle.Top;
             buttonDonate.FlatStyle = FlatStyle.Flat;
-            buttonDonate.Image = Properties.Resources.icons8_dollar_32;
+            buttonDonate.Image = Properties.Resources.icons8_heart_32;
             buttonDonate.ImageAlign = ContentAlignment.MiddleRight;
             buttonDonate.Location = new Point(2, 2);
             buttonDonate.Margin = new Padding(2);

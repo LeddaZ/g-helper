@@ -66,6 +66,8 @@ public class AsusACPI
     public const uint BatteryDischarge = 0x0012005A;
 
     public const uint StatusMode = 0x00090031;
+    public const uint PowerSavingMode = 0x00090032;
+
     public const uint PerformanceMode = 0x00120075; // Performance modes
     public const uint VivoBookMode = 0x00110019; // Vivobook performance modes
 
@@ -630,7 +632,7 @@ public class AsusACPI
         int value = DeviceGet(FanHysteresisCPU);
         if (value < 0)
         {
-            Logger.WriteLine($"FanHysteresis Read: not supported ({value})");
+            //Logger.WriteLine($"FanHysteresis Read: not supported ({value})");
             return (-1, -1);
         }
         int up = value & 0xFF;
