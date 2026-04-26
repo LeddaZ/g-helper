@@ -624,6 +624,7 @@ namespace GHelper.USB
             {
                 initDirect = false;
                 AsusHid.WriteAura(new byte[] { AsusHid.AURA_ID, 0xBC });
+                Task.Delay(50).Wait();
             }
 
             Array.Clear(keyBuf, 0, keyBuf.Length);
