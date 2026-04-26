@@ -12,7 +12,7 @@ Small and lightweight Armoury Crate alternative for Asus laptops offering almost
 - Added support for specifiying the monitor to use for Ambient mode (in config.json)
 - Added G615LR to the limited RGB list (my specific variant doesn't have the RGB logo)
 
-# [:floppy_disk: Download](https://github.com/seerge/g-helper/releases/latest/download/GHelper.zip)
+# [:floppy_disk: Download](https://github.com/seerge/g-helper/releases/download/v0.247/GHelper.exe)
 **⭐ If you like the app - please spread the word about it online**
 
 <table>

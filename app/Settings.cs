@@ -22,6 +22,7 @@ namespace GHelper
     {
         ContextMenuStrip contextMenuStrip = new CustomContextMenu();
         ToolStripMenuItem menuEco, menuStandard, menuUltimate, menuOptimized;
+        DonateControl donateControl;
 
         public GPUModeControl gpuControl;
         public AllyControl allyControl;
@@ -282,15 +283,8 @@ namespace GHelper
             labelVisual.Click += LabelVisual_Click;
             labelCharge.Click += LabelCharge_Click;
 
-            buttonDonate.Click += ButtonDonate_Click;
-
-            int click = AppConfig.Get("donate_click");
-            int startCount = AppConfig.Get("start_count");
-            if (startCount >= ((click < 10) ? 10 : click + 50))
-            {
-                buttonDonate.BorderColor = colorTurbo;
-                buttonDonate.Badge = Math.Clamp((startCount - click) / 50, 1, 9);
-            }
+            donateControl = new DonateControl(this, buttonDonate);
+            donateControl.Init();
 
             labelBacklight.ForeColor = colorStandard;
             labelBacklight.Click += LabelBacklight_Click;
@@ -322,13 +316,6 @@ namespace GHelper
         {
             KeyboardHook.KeyKeyPress(Keys.LWin, Keys.A);
             activateCheck = true;
-        }
-
-        private void ButtonDonate_Click(object? sender, EventArgs e)
-        {
-            AppConfig.Set("donate_click", AppConfig.Get("start_count"));
-            buttonDonate.Badge = 0;
-            Process.Start(new ProcessStartInfo("https://g-helper.com/support") { UseShellExecute = true });
         }
 
         private void LabelBacklight_Click(object? sender, EventArgs e)
@@ -866,6 +853,18 @@ namespace GHelper
                 contextMenuStrip.Items.Add("-");
             }
 
+            var bwIcon = new ToolStripMenuItem(Properties.Strings.BWTrayIcon);
+            bwIcon.Margin = padding;
+            bwIcon.Checked = AppConfig.IsBWIcon();
+            bwIcon.Click += (sender, args) =>
+            {
+                bwIcon.Checked = !bwIcon.Checked;
+                AppConfig.Set("bw_icon", bwIcon.Checked ? 1 : 0);
+                VisualiseIcon();
+            };
+            contextMenuStrip.Items.Add(bwIcon);
+
+            contextMenuStrip.Items.Add("-");
 
             var quit = new ToolStripMenuItem(Properties.Strings.Quit);
             quit.Click += ButtonQuit_Click;
@@ -889,6 +888,8 @@ namespace GHelper
                 contextMenuStrip.BackColor = this.BackColor;
                 contextMenuStrip.ForeColor = this.ForeColor;
             }
+
+            donateControl?.ApplyTheme();
         }
 
         private void ButtonXGM_Click(object? sender, EventArgs e)
@@ -989,7 +990,7 @@ namespace GHelper
 
         private void ButtonScreenAuto_Click(object? sender, EventArgs e)
         {
-            AppConfig.Set("screen_auto", 1);
+            ScreenControl.SetAutoRefresh(1);
             ScreenControl.AutoScreen();
         }
 
@@ -1353,13 +1354,13 @@ namespace GHelper
 
         private void Button120Hz_Click(object? sender, EventArgs e)
         {
-            AppConfig.Set("screen_auto", 0);
+            ScreenControl.SetAutoRefresh(0);
             ScreenControl.SetScreen(ScreenControl.MAX_REFRESH, 1);
         }
 
         private void Button60Hz_Click(object? sender, EventArgs e)
         {
-            AppConfig.Set("screen_auto", 0);
+            ScreenControl.SetAutoRefresh(0);
             ScreenControl.SetScreen(ScreenControl.MIN_RATE, 0);
         }
 

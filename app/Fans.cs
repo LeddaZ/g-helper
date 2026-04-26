@@ -5,7 +5,6 @@ using GHelper.UI;
 using GHelper.USB;
 using PawnIO;
 using System.Diagnostics;
-using System.Management;
 using System.Windows.Forms.DataVisualization.Charting;
 
 namespace GHelper
@@ -307,24 +306,12 @@ namespace GHelper
             InitPowerPlan();
             InitUV();
             InitGPU();
-            InitHysteresis();
         }
 
         public void InitCPU()
         {
-            Task.Run(async () =>
-            {
-                string CPUName;
-                using (ManagementObjectSearcher myProcessorObject = new ManagementObjectSearcher("select * from Win32_Processor"))
-                    foreach (ManagementObject obj in myProcessorObject.Get())
-                    {
-                        CPUName = obj["Name"].ToString();
-                        Invoke(delegate
-                        {
-                            Text = Properties.Strings.FansAndPower + " - " + CPUName;
-                        });
-                    }
-            });
+            string name = CpuInfo.Name;
+            if (name.Length > 0) Text = Properties.Strings.FansAndPower + " - " + name;
         }
 
         public void ToggleNavigation(int index = 0)
@@ -666,7 +653,7 @@ namespace GHelper
             labelGPUMemory.Text = $"{trackGPUMemory.Value} MHz";
 
             labelGPUBoost.Text = $"{trackGPUBoost.Value}W";
-            labelGPUTemp.Text = $"{trackGPUTemp.Value}°C";
+            labelGPUTemp.Text = $"{trackGPUTemp.Value}Â°C";
 
             if (trackGPUClockLimit.Value >= NvidiaGpuControl.MaxClockLimit)
                 labelGPUClockLimit.Text = "Default";
@@ -785,7 +772,7 @@ namespace GHelper
         {
 
             string title = "";
-            string scale = ", RPM/°C";
+            string scale = ", RPM/Â°C";
 
             switch (device)
             {
