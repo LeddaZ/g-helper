@@ -366,5 +366,7 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 
+tools/
+
 # Rider
 .idea/
