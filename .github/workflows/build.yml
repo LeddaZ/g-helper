@@ -53,10 +53,6 @@ jobs:
         run: |
           dotnet publish app/GHelper.sln --configuration Release --runtime win-x64 -p:PublishSingleFile=true --no-self-contained
 
-      - name: Create ZIP from EXE
-        if: steps.check_commits.outputs.has_new_commits == 'true'
-        run: powershell Compress-Archive ./app/bin/x64/Release/net8.0-windows/win-x64/publish/GHelper.exe ./app/bin/x64/Release/net8.0-windows/win-x64/publish/GHelper.zip
-
       - name: Generate release tag
         if: steps.check_commits.outputs.has_new_commits == 'true'
         id: generate_tag
@@ -89,7 +85,7 @@ jobs:
           name: Release ${{ steps.generate_tag.outputs.tag }}
           body: |
             ${{ steps.read_changelog.outputs.changelog }}
-          files: app/bin/x64/Release/net8.0-windows/win-x64/publish/GHelper.zip
+          files: app/bin/x64/Release/net8.0-windows/win-x64/publish/GHelper.exe
           draft: false
           prerelease: false
         env:

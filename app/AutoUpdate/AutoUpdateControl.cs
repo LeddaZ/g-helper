@@ -78,7 +78,7 @@ namespace GHelper.AutoUpdate
 
                 for (int i = 0; i < assets.GetArrayLength(); i++)
                 {
-                    if (assets[i].GetProperty("browser_download_url").ToString().Contains(".zip"))
+                    if (assets[i].GetProperty("browser_download_url").ToString().Contains(".exe"))
                         url = assets[i].GetProperty("browser_download_url").ToString();
                 }
 
@@ -136,23 +136,23 @@ namespace GHelper.AutoUpdate
         {
 
             Uri uri = new(requestUri);
-            string zipName = Path.GetFileName(uri.LocalPath);
+            string newExeName = Path.GetFileName(uri.LocalPath.Replace("GHelper.exe", "NewGHelper.exe"));
 
             string exeLocation = Application.ExecutablePath;
             string exeName = Path.GetFileName(exeLocation);
-            string zipLocation = Path.GetDirectoryName(exeLocation) + "\\" + zipName;
+            string newExeLocation = Path.GetDirectoryName(exeLocation) + "\\" + newExeName;
 
             using HttpClient client = new();
             Logger.WriteLine(requestUri);
             Logger.WriteLine(Path.GetDirectoryName(exeLocation));
-            Logger.WriteLine(zipName);
+            Logger.WriteLine(newExeName);
             Logger.WriteLine(exeName);
 
             try
             {
                 using HttpResponseMessage response = await client.GetAsync(uri);
                 response.EnsureSuccessStatusCode();
-                using FileStream fileStream = new(zipLocation, FileMode.Create, FileAccess.Write, FileShare.None);
+                using FileStream fileStream = new(newExeLocation, FileMode.Create, FileAccess.Write, FileShare.None);
                 await response.Content.CopyToAsync(fileStream);
             }
             catch (Exception ex)
@@ -170,7 +170,7 @@ namespace GHelper.AutoUpdate
                 return;
             }
 
-            string command = $"$ErrorActionPreference = \"Stop\"; Set-Location -Path '{EscapeString(Path.GetDirectoryName(exeLocation))}'; Wait-Process -Name \"GHelper\"; Expand-Archive \"{zipName}\" -DestinationPath . -Force; Remove-Item \"{zipName}\" -Force; \".\\{exeName}\"; ";
+            string command = $"$ErrorActionPreference = \"Stop\"; Set-Location -Path '{EscapeString(Path.GetDirectoryName(exeLocation))}'; Wait-Process -Name \"GHelper\"; Remove-Item \"{exeName}\" -Force; Rename-Item -Path \"{newExeName}\" -NewName \"{exeName}\"; \"{exeName}\"; ";
             Logger.WriteLine(command);
 
             try
