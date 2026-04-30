@@ -69,6 +69,7 @@ namespace GHelper
 
             labelRisky.Text = Properties.Strings.UndervoltingRisky;
             buttonApplyAdvanced.Text = Properties.Strings.Apply;
+            buttonReadLimits.Text = "Read Limits";
             checkApplyUV.Text = Properties.Strings.AutoApply;
 
             buttonCalibrate.Text = Properties.Strings.Calibrate;
@@ -224,6 +225,7 @@ namespace GHelper
             trackTemp.Scroll += TrackUV_Scroll;
 
             buttonApplyAdvanced.Click += ButtonApplyAdvanced_Click;
+            buttonReadLimits.Click += ButtonReadLimits_Click;
 
             buttonCPU.BorderColor = colorStandard;
             buttonGPU.BorderColor = colorTurbo;
@@ -244,7 +246,7 @@ namespace GHelper
 
             ToggleNavigation(0);
 
-            if (Program.acpi.DeviceGet(AsusACPI.DevsCPUFanCurve) < 0) buttonCalibrate.Visible = false;
+            if (!Program.acpi.IsSupported(AsusACPI.DevsCPUFanCurve)) buttonCalibrate.Visible = false;
 
             FormClosed += Fans_FormClosed;
             Activated  += (_, _) => VisualiseAdvanced();
@@ -366,17 +368,19 @@ namespace GHelper
         {
             string result = modeControl.SetRyzen(true);
             checkApplyUV.Enabled = true;
+            ShowLabelRisky(result);
+        }
 
-            string limits = modeControl.ReadRyzenLimits();
-            var sections = new List<string>();
-            if (result.Length > 0) sections.Add(result);
-            if (limits.Length > 0) sections.Add(limits);
+        private void ButtonReadLimits_Click(object? sender, EventArgs e)
+        {
+            ShowLabelRisky(modeControl.ReadRyzenLimits());
+        }
 
-            if (sections.Count > 0)
-            {
-                labelRisky.Text = string.Join(Environment.NewLine + Environment.NewLine, sections);
-                labelRisky.Visible = true;
-            }
+        private void ShowLabelRisky(string text)
+        {
+            if (string.IsNullOrEmpty(text)) return;
+            labelRisky.Text = text;
+            labelRisky.Visible = true;
         }
 
         public void InitUV()
@@ -390,7 +394,7 @@ namespace GHelper
             int temp = AppConfig.GetMode("cpu_temp");
             if (temp < CpuInfo.MinTemp || temp > CpuInfo.MaxTemp) temp = CpuInfo.MaxTemp;
 
-            checkApplyUV.Enabled = checkApplyUV.Checked = AppConfig.IsMode("auto_uv");
+            checkApplyUV.Enabled = checkApplyUV.Checked = AppConfig.IsApplyUV();
 
             trackUV.Value = cpuUV;
             trackUViGPU.Value = igpuUV;
@@ -614,8 +618,8 @@ namespace GHelper
                         try { gpuName = nvControl.FullName; } catch { }
                     }
 
-                    bool boostVisible = (Program.acpi.DeviceGet(AsusACPI.PPT_GPUC0) >= 0);
-                    bool tempVisible = (Program.acpi.DeviceGet(AsusACPI.PPT_GPUC2) >= 0);
+                    bool boostVisible = Program.acpi.IsSupported(AsusACPI.PPT_GPUC0);
+                    bool tempVisible = Program.acpi.IsSupported(AsusACPI.PPT_GPUC2);
 
                     Invoke(delegate
                     {
@@ -943,9 +947,9 @@ namespace GHelper
         public void InitPower()
         {
 
-            bool modeA = Program.acpi.DeviceGet(AsusACPI.PPT_APUA0) >= 0 || CpuInfo.IsAMD;
+            bool modeA = Program.acpi.IsSupported(AsusACPI.PPT_APUA0) || CpuInfo.IsAMD;
             bool modeB0 = Program.acpi.IsAllAmdPPT();
-            bool modeC1 = Program.acpi.DeviceGet(AsusACPI.PPT_APUC1) >= 0;
+            bool modeC1 = Program.acpi.IsSupported(AsusACPI.PPT_APUC1);
 
             panelTotal.Visible = modeA;
             panelCPU.Visible = modeB0;
@@ -982,7 +986,7 @@ namespace GHelper
 
             }
 
-            checkApplyPower.Checked = AppConfig.IsMode("auto_apply_power");
+            checkApplyPower.Checked = AppConfig.IsApplyPower();
 
             int limit_total = AppConfig.GetMode("limit_total", AsusACPI.DefaultTotal);
             int limit_slow = AppConfig.GetMode("limit_slow", limit_total);
@@ -1102,8 +1106,8 @@ namespace GHelper
             LoadProfile(seriesCPU, AsusFan.CPU);
             LoadProfile(seriesGPU, AsusFan.GPU);
 
-            bool autoFans = AppConfig.IsMode("auto_apply_power") && AppConfig.IsFanRequired();
-            bool applyFans = AppConfig.IsMode("auto_apply");
+            bool autoFans = AppConfig.IsApplyPower() && AppConfig.IsFanRequired();
+            bool applyFans = AppConfig.IsApplyFans();
 
             checkApplyFans.Checked = applyFans;
 

@@ -44,15 +44,23 @@ namespace GHelper.Mode
         public static bool IsPawnAvailable()  => GetSmu() != null;
         public static bool IsPawnInstalled()   => RyzenSmuService.IsPawnInstalled();
 
-        static System.Timers.Timer reapplyTimer = default!;
+        static System.Timers.Timer? reapplyTimer;
         static System.Timers.Timer modeToggleTimer = default!;
         static CancellationTokenSource _modeCts = new();
 
         public ModeControl()
         {
-            reapplyTimer = new System.Timers.Timer(AppConfig.GetMode("reapply_time", 30) * 1000);
-            reapplyTimer.Enabled = false;
-            reapplyTimer.Elapsed += ReapplyTimer_Elapsed;
+            int reapplyTime = AppConfig.Get("reapply_time", 0);
+            if (reapplyTime > 0)
+            {
+                reapplyTimer = new System.Timers.Timer(reapplyTime * 1000);
+                reapplyTimer.Elapsed += ReapplyTimer_Elapsed;
+            }
+        }
+
+        private static void SetReapplyEnabled(bool enabled)
+        {
+            if (reapplyTimer != null) reapplyTimer.Enabled = enabled;
         }
 
 
@@ -112,7 +120,7 @@ namespace GHelper.Mode
             {
                 try
                 {
-                    bool reset = AppConfig.IsResetRequired() && (Modes.GetBase(oldMode) == Modes.GetBase(mode)) && customPower > 0 && !AppConfig.IsMode("auto_apply_power");
+                    bool reset = AppConfig.IsResetRequired() && (Modes.GetBase(oldMode) == Modes.GetBase(mode)) && customPower > 0 && !AppConfig.IsApplyPower();
 
                     customFans = false;
                     customPower = 0;
@@ -142,7 +150,7 @@ namespace GHelper.Mode
                     await Task.Delay(TimeSpan.FromMilliseconds(1000), ct);
                     ct.ThrowIfCancellationRequested();
                     AutoPower();
-
+                    
                     var command = AppConfig.GetModeString("mode_command");
                     if (command is not null)
                     {   Logger.WriteLine("Running mode command: " + command);
@@ -154,9 +162,6 @@ namespace GHelper.Mode
                     Logger.WriteLine($"SetPerformanceMode cancelled (mode {mode})");
                 }
             }, ct);
-
-
-            if (AppConfig.Is("xgm_fan")) XGM.Reset();
 
             if (notify) Toast();
 
@@ -207,7 +212,7 @@ namespace GHelper.Mode
         {
             customFans = false;
 
-            if (AppConfig.IsMode("auto_apply") || force)
+            if (AppConfig.IsApplyFans() || force)
             {
 
                 bool xgmFan = false;
@@ -249,7 +254,7 @@ namespace GHelper.Mode
                     Program.acpi.SetFanHysteresis(hystUp, hystDown);
 
                 // force set PPTs for missbehaving bios on FX507/517 series
-                if ((AppConfig.IsPowerRequired() || xgmFan) && !AppConfig.IsMode("auto_apply_power"))
+                if ((AppConfig.IsPowerRequired() || xgmFan) && !AppConfig.IsApplyPower())
                 {
                     Task.Run(async () =>
                     {
@@ -259,6 +264,9 @@ namespace GHelper.Mode
                     });
                 }
 
+            } else
+            {
+                XGM.Reset();
             }
 
             SetModeLabel();
@@ -270,8 +278,8 @@ namespace GHelper.Mode
 
             customPower = 0;
 
-            bool applyPower = AppConfig.IsMode("auto_apply_power");
-            bool applyFans = AppConfig.IsMode("auto_apply");
+            bool applyPower = AppConfig.IsApplyPower();
+            bool applyFans = AppConfig.IsApplyFans();
 
             if (applyPower && !applyFans && AppConfig.IsFanRequired())
             {
@@ -279,8 +287,8 @@ namespace GHelper.Mode
                 Thread.Sleep(500);
             }
 
-            SetPower();
-
+            if (applyPower) SetPower();
+            
             Thread.Sleep(500);
             SetGPUPower();
             AutoRyzen(launchAsAdmin);
@@ -297,7 +305,7 @@ namespace GHelper.Mode
             if (init) _ryzenPower = true;
 
             if (!_ryzenPower) return;
-            if (!AppConfig.IsMode("auto_apply_power")) return;
+            if (!AppConfig.IsApplyPower()) return;
 
             var smu = GetSmu();
             if (smu == null) return;
@@ -339,20 +347,20 @@ namespace GHelper.Mode
             if (limit_slow > AsusACPI.MaxTotal) return;
             if (limit_slow < AsusACPI.MinTotal) return;
 
-            // SPL and SPPT 
-            if (Program.acpi.DeviceGet(AsusACPI.PPT_APUA0) >= 0)
+            // SPL and SPPT
+            if (Program.acpi.IsSupported(AsusACPI.PPT_APUA0))
             {
                 Program.acpi.DeviceSet(AsusACPI.PPT_APUA3, limit_total, "PowerLimit A3");
                 Program.acpi.DeviceSet(AsusACPI.PPT_APUA0, limit_slow, "PowerLimit A0");
                 customPower = limit_total;
             }
 
-            if (Program.acpi.IsAllAmdPPT()) // CPU limit all amd models
+            if (allAMD) // CPU limit all amd models
             {
                 Program.acpi.DeviceSet(AsusACPI.PPT_CPUB0, limit_cpu, "PowerLimit B0");
                 customPower = limit_cpu;
             }
-            else if (isAMD && Program.acpi.DeviceGet(AsusACPI.PPT_APUC1) >= 0) // FPPT boost for non all-amd models
+            else if (isAMD && Program.acpi.IsSupported(AsusACPI.PPT_APUC1)) // FPPT boost for non all-amd models
             {
                 Program.acpi.DeviceSet(AsusACPI.PPT_APUC1, limit_fast, "PowerLimit C1");
             }
@@ -404,13 +412,13 @@ namespace GHelper.Mode
 
             int boostResult = -1;
 
-            if (gpu_power >= AsusACPI.MinGPUPower && gpu_power <= AsusACPI.MaxGPUPower && Program.acpi.DeviceGet(AsusACPI.GPU_POWER) >= 0)
+            if (gpu_power >= AsusACPI.MinGPUPower && gpu_power <= AsusACPI.MaxGPUPower && Program.acpi.IsSupported(AsusACPI.GPU_POWER))
                 Program.acpi.DeviceSet(AsusACPI.GPU_POWER, gpu_power, "PowerLimit TGP (GPU VAR)");
 
-            if (gpu_boost >= AsusACPI.MinGPUBoost && gpu_boost <= AsusACPI.MaxGPUBoost && Program.acpi.DeviceGet(AsusACPI.PPT_GPUC0) >= 0)
+            if (gpu_boost >= AsusACPI.MinGPUBoost && gpu_boost <= AsusACPI.MaxGPUBoost && Program.acpi.IsSupported(AsusACPI.PPT_GPUC0))
                 boostResult = Program.acpi.DeviceSet(AsusACPI.PPT_GPUC0, gpu_boost, "PowerLimit C0 (GPU BOOST)");
 
-            if (gpu_temp >= AsusACPI.MinGPUTemp && gpu_temp <= AsusACPI.MaxGPUTemp && Program.acpi.DeviceGet(AsusACPI.PPT_GPUC2) >= 0)
+            if (gpu_temp >= AsusACPI.MinGPUTemp && gpu_temp <= AsusACPI.MaxGPUTemp && Program.acpi.IsSupported(AsusACPI.PPT_GPUC2))
                 Program.acpi.DeviceSet(AsusACPI.PPT_GPUC2, gpu_temp, "PowerLimit C2 (GPU TEMP)");
 
             // Fallback
@@ -512,7 +520,7 @@ namespace GHelper.Mode
                 Logger.WriteLine("UV Error: " + ex.ToString());
             }
 
-            reapplyTimer.Enabled = AppConfig.IsMode("auto_uv");
+            SetReapplyEnabled(AppConfig.IsApplyUV());
             return lines.ToString().TrimEnd();
         }
 
@@ -543,16 +551,16 @@ namespace GHelper.Mode
         {
             if (_cpuUV != 0) SetUV(0);
             if (_igpuUV != 0) SetUViGPU(0);
-            reapplyTimer.Enabled = false;
+            SetReapplyEnabled(false);
         }
 
         public void AutoRyzen(bool launchAsAdmin = false)
         {
             if (!CpuInfo.IsAMD) return;
 
-            bool nativeAPU = Program.acpi.DeviceGet(AsusACPI.PPT_APUA0) >= 0;
-            bool ryzenPower = AppConfig.IsMode("auto_apply_power") && (!nativeAPU || AppConfig.Is("ryzen_power"));
-            bool autoUV = AppConfig.IsMode("auto_uv");
+            bool nativeAPU = Program.acpi.IsSupported(AsusACPI.PPT_APUA0);
+            bool ryzenPower = AppConfig.IsApplyPower() && (!nativeAPU || AppConfig.Is("ryzen_power"));
+            bool autoUV = AppConfig.IsApplyUV();
 
             if (!ryzenPower && !autoUV) { ResetRyzen(); return; }
 
@@ -568,7 +576,7 @@ namespace GHelper.Mode
             }
             if (autoUV) SetRyzen();
 
-            reapplyTimer.Enabled = autoUV || ryzenPower;
+            SetReapplyEnabled(autoUV || ryzenPower);
         }
 
         public void ShutdownReset()

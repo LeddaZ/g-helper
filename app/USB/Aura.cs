@@ -4,7 +4,6 @@ using GHelper.Input;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
-using System.Text;
 using static GHelper.Helpers.DynamicLightingHelper;
 
 namespace GHelper.USB
@@ -327,14 +326,13 @@ namespace GHelper.USB
         {
             if (isACPI) return;
 
-            byte[] query = [AsusHid.AURA_ID, 0x05, 0x20, 0x31, 0x00, 0x20];
             if (IsBacklightDetected)
             {
-                AsusHid.SetFeatureAura(query);
+                AsusHid.AuraProbe(false);
                 return;
             }
 
-            var response = AsusHid.AuraProbe(query);
+            var response = AsusHid.AuraProbe(true);
 
             if (response is null || response.Length < 18) return;
 
@@ -395,8 +393,6 @@ namespace GHelper.USB
 
         public static void Init()
         {
-            AsusHid.SetFeatureAura([AsusHid.AURA_ID, 0xB9]);
-            AsusHid.SetFeatureAura([AsusHid.AURA_ID, .. Encoding.ASCII.GetBytes("ASUS Tech.Inc.")]);
             DetectBacklightType();
 
             /*
@@ -719,6 +715,7 @@ namespace GHelper.USB
                     buffer[6] = (byte)i;
                     Buffer.BlockCopy(keyBuf, 3 * i, buffer, 9, 3 * buffer[7]);
                     AsusHid.SetFeatureAura(buffer);
+                    Thread.Sleep(1);
                 }
             }
 
@@ -740,6 +737,7 @@ namespace GHelper.USB
                 }
                 Buffer.BlockCopy(keyBuf, 0, buffer, 9, 3 * leds_4_zone);
                 AsusHid.SetFeatureAura(buffer);
+                Thread.Sleep(1);
                 return;
             }
 
