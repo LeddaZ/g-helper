@@ -239,7 +239,11 @@ public static class AsusHid
     public static byte[]? AuraProbe(bool query, string log = "Aura Probe")
     {
         var device = FindDevices(AURA_ID)?.FirstOrDefault();
-        if (device == null) return null;
+        if (device == null)
+        {
+            Logger.WriteLine($"{log}: no device");
+            return null;
+        }
 
         int featLen = device.GetMaxFeatureReportLength();
 
@@ -252,18 +256,10 @@ public static class AsusHid
         try
         {
             using var stream = device.Open();
-            var payload = new byte[featLen];
 
             foreach (var primer in primers)
-            {
-                Array.Clear(payload, 0, featLen);
-                Array.Copy(primer, payload, Math.Min(primer.Length, featLen));
-                stream.SetFeature(payload);
-            }
-
-            Array.Clear(payload, 0, featLen);
-            Array.Copy(queryBytes, payload, Math.Min(queryBytes.Length, featLen));
-            stream.SetFeature(payload);
+                stream.Write(primer);
+            stream.Write(queryBytes);
 
             if (!query) return null;
 
