@@ -1,11 +1,11 @@
-[![GitHub release](https://img.shields.io/github/release/seerge/g-helper?color=%234493f8)](https://GitHub.com/seerge/g-helper/releases/)
-[![Github all releases](https://img.shields.io/github/downloads/seerge/g-helper/total?logo=download&color=%234493f8)](https://GitHub.com/seerge/g-helper/releases/)
+[![GitHub release](https://img.shields.io/github/release/LeddaZ/g-helper?color=%234493f8)](https://GitHub.com/seerge/g-helper/releases/)
+[![Github all releases](https://img.shields.io/github/downloads/LeddaZ/g-helper/total?logo=download&color=%234493f8)](https://GitHub.com/seerge/g-helper/releases/)
 [![SLSA3](https://img.shields.io/badge/SLSA-level%203-blue?color=%234493f8)](https://github.com/seerge/g-helper/attestations)
 [![GitHub stars](https://img.shields.io/github/stars/seerge/g-helper?style=flat&color=4493f8&logo=github)](https://GitHub.com/seerge/g-helper/stargazers/)
 [![中文](https://img.shields.io/badge/-中文-555555)](https://github.com/seerge/g-helper/blob/main/docs/README.zh-CN.md)
 [![日本語](https://img.shields.io/badge/-日本語-555555)](https://github.com/seerge/g-helper/blob/main/docs/README.ja-JP.md)
 [![Čeština](https://img.shields.io/badge/-Čeština-555555)](https://github.com/seerge/g-helper/blob/main/docs/README.cs-CZ.md)
-<a href="https://github.com/seerge/g-helper/releases/latest/download/GHelper.exe" alt="G-Helper - Lightweight control tool for Asus laptops"><img width="1280" alt="G-Helper - Lightweight control tool for Asus laptops" src="https://github.com/user-attachments/assets/d0319126-97e5-4011-98b7-5d09ca77b8bb" /></a>
+<a href="https://github.com/LeddaZ/g-helper/releases/latest/download/GHelper.exe" alt="G-Helper - Lightweight control tool for Asus laptops"><img width="1280" alt="G-Helper - Lightweight control tool for Asus laptops" src="https://github.com/user-attachments/assets/d0319126-97e5-4011-98b7-5d09ca77b8bb" /></a>
 
 # G-Helper - Enhance Laptop Control
 
