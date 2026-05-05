@@ -31,15 +31,13 @@ namespace GHelper
 
         public static ToastForm toast;
 
-        public static IntPtr unRegPowerNotify, unRegPowerNotifyLid;
+        public static IntPtr unRegPowerNotify, unRegPowerNotifyLid, unRegSuspendResume;
         public static int WM_TASKBARCREATED = 0;
 
         private static long lastAuto;
         private static long lastTheme;
 
         public static InputDispatcher? inputDispatcher;
-
-        private static PowerLineStatus isPlugged = SystemInformation.PowerStatus.PowerLineStatus;
 
         // The main entry point for the application
         public static void Main(string[] args)
@@ -154,6 +152,8 @@ namespace GHelper
 
             SetAutoModes(init: true);
 
+            powerSettleTimer.Elapsed += OnPowerSettled;
+
             // Subscribing for system power change events
             SystemEvents.PowerModeChanged += SystemEvents_PowerModeChanged;
             SystemEvents.UserPreferenceChanged += SystemEvents_UserPreferenceChanged;
@@ -167,6 +167,7 @@ namespace GHelper
             // Subscribing for monitor power on events
             unRegPowerNotify = NativeMethods.RegisterPowerSettingNotification(settingsForm.Handle, PowerSettingGuid.ConsoleDisplayState, NativeMethods.DEVICE_NOTIFY_WINDOW_HANDLE);
             unRegPowerNotifyLid = NativeMethods.RegisterPowerSettingNotification(settingsForm.Handle, PowerSettingGuid.LIDSWITCH_STATE_CHANGE, NativeMethods.DEVICE_NOTIFY_WINDOW_HANDLE);
+            unRegSuspendResume = NativeMethods.RegisterSuspendResumeNotification(settingsForm.Handle, NativeMethods.DEVICE_NOTIFY_WINDOW_HANDLE);
 
 
             Task task = Task.Run((Action)PeripheralsProvider.DetectAllAsusMice);
@@ -289,8 +290,8 @@ namespace GHelper
             if (Math.Abs(DateTimeOffset.Now.ToUnixTimeMilliseconds() - lastAuto) < skipDelay) return false;
             lastAuto = DateTimeOffset.Now.ToUnixTimeMilliseconds();
 
-            isPlugged = SystemInformation.PowerStatus.PowerLineStatus;
-            Logger.WriteLine("AutoSetting for " + isPlugged.ToString());
+            currentSource = ReadPowerSource();
+            Logger.WriteLine("AutoSetting for " + SystemInformation.PowerStatus.PowerLineStatus.ToString());
 
             BatteryControl.AutoBattery(init);
             if (init) InputDispatcher.InitScreenpad();
@@ -328,6 +329,43 @@ namespace GHelper
             return true;
         }
 
+        public enum PowerSource { Battery, USBC, Barrel }
+
+        public static PowerSource currentSource = PowerSource.Battery;
+        private static readonly System.Timers.Timer powerSettleTimer = new() { AutoReset = false };
+
+        public static PowerSource ReadPowerSource()
+        {
+            if (SystemInformation.PowerStatus.PowerLineStatus != PowerLineStatus.Online)
+                return PowerSource.Battery;
+
+            int chargerMode = acpi?.DeviceGet(AsusACPI.ChargerMode) ?? 0;
+            if (chargerMode > 0 && (chargerMode & AsusACPI.ChargerBarrel) == 0)
+                return PowerSource.USBC;
+
+            return PowerSource.Barrel;
+        }
+
+        public static void SchedulePowerCheck()
+        {
+            if (AppConfig.Is("disable_power_event")) return;
+            powerSettleTimer.Interval = Math.Max(AppConfig.Get("charger_delay"), 2000);
+            powerSettleTimer.Stop();
+            powerSettleTimer.Start();
+        }
+
+        private static void OnPowerSettled(object? sender, System.Timers.ElapsedEventArgs e)
+        {
+            PowerSource source = ReadPowerSource();
+            if (source == currentSource) return;
+
+            Logger.WriteLine($"Power source: {currentSource} -> {source}");
+            currentSource = source;
+            SetAutoModes(powerChanged: true);
+        }
+
+        public static void OnChargerEvent() => SchedulePowerCheck();
+
         private static void SystemEvents_PowerModeChanged(object sender, PowerModeChangedEventArgs e)
         {
             if (e.Mode == PowerModes.Suspend)
@@ -335,22 +373,11 @@ namespace GHelper
                 Logger.WriteLine("Power Mode Changed:" + e.Mode.ToString());
                 modeControl.ShutdownReset();
                 InputDispatcher.ShutdownStatusLed();
+                return;
             }
 
-            if (SystemInformation.PowerStatus.PowerLineStatus == isPlugged) return;
             Logger.WriteLine($"Power Mode {e.Mode}: {SystemInformation.PowerStatus.PowerLineStatus}");
-            
-            if (AppConfig.Is("disable_power_event")) return;
-
-            int delay = AppConfig.Get("charger_delay");
-            if (delay > 0)
-            {
-                Logger.WriteLine($"Charger Delay: {delay}");
-                Thread.Sleep(delay);
-                if (SystemInformation.PowerStatus.PowerLineStatus == isPlugged) return;
-            }
-
-            SetAutoModes(powerChanged: true);
+            SchedulePowerCheck();
         }
 
         public static void SettingsToggle(bool checkForFocus = true, bool trayClick = false)
@@ -415,6 +442,7 @@ namespace GHelper
             clamshellControl.UnregisterDisplayEvents();
             NativeMethods.UnregisterPowerSettingNotification(unRegPowerNotify);
             NativeMethods.UnregisterPowerSettingNotification(unRegPowerNotifyLid);
+            NativeMethods.UnregisterSuspendResumeNotification(unRegSuspendResume);
             Application.Exit();
         }
 
