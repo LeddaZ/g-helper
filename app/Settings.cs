@@ -1584,7 +1584,7 @@ namespace GHelper
             gpuControl.KillGPUApps();
         }
 
-        public async void RefreshSensors(bool force = false)
+        public async void RefreshSensors(bool force = false, bool toast = false)
         {
 
             if (!force && Math.Abs(DateTimeOffset.Now.ToUnixTimeMilliseconds() - lastRefresh) < 2000) return;
@@ -1643,6 +1643,7 @@ namespace GHelper
 
             if (Program.trayIcon is not null) Program.trayIcon.Text = trayTip;
 
+            if (toast) Program.toast.RunToast(trayTip.Replace("\n", ", "));
         }
 
         public void LabelFansResult(string text)
