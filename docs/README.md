@@ -9,7 +9,7 @@
 [![Čeština](https://img.shields.io/badge/-Čeština-555555)](https://github.com/seerge/g-helper/blob/main/docs/README.cs-CZ.md)
 <a href="https://github.com/seerge/g-helper/releases/latest/download/GHelper.exe" alt="G-Helper - Lightweight control tool for Asus laptops"><img width="1280" alt="G-Helper - Lightweight control tool for Asus laptops" src="https://raw.githubusercontent.com/seerge/g-helper/refs/heads/main/docs/app-hero.jpg" /></a>
 
-G-Helper is fast, native, and straight to the point - a tool for tuning performance, fans, GPU, battery, and RGB on any Asus laptop or handheld: ROG Zephyrus, Flow, Strix, Scar, TUF, Vivobook, Zenbook, ProArt, ROG Ally, and beyond.
+Small and lightweight Armoury Crate alternative for Asus laptops offering almost same functionality with a much smaller footprint. Works with all popular models, such as ROG Zephyrus G14, G15, G16, M16, Flow X13, Flow X16, Flow Z13, DUO, TUF Series, Strix or Scar Series, ProArt, Vivobook, Zenbook, Expertbook, ROG Ally or Ally X and many more!
 
 <a href="https://github.com/seerge/g-helper/releases/latest/download/GHelper.exe"><img width="250" alt="Download" src="https://raw.githubusercontent.com/seerge/g-helper/main/docs/Download.png" /></a> &nbsp; <a href="https://g-helper.com/support"><img width="250" alt="Support" src="https://raw.githubusercontent.com/seerge/g-helper/main/docs/Support.png" /></a>
 
