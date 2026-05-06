@@ -1,5 +1,7 @@
 # G-Helper - Lightweight control tool for Asus laptops
 
+Small and lightweight Armoury Crate alternative for Asus laptops offering almost same functionality with a much smaller footprint. Works with all popular models, such as ROG Zephyrus G14, G15, G16, M16, Flow X13, Flow X16, Flow Z13, DUO, TUF Series, Strix or Scar Series, ProArt, Vivobook, Zenbook, Expertbook, ROG Ally or Ally X and many more!
+
 [![GitHub release](https://img.shields.io/github/release/seerge/g-helper?color=%234493f8)](https://GitHub.com/seerge/g-helper/releases/)
 [![Github all releases](https://img.shields.io/github/downloads/seerge/g-helper/total?logo=download&color=%234493f8)](https://GitHub.com/seerge/g-helper/releases/)
 [![SLSA3](https://img.shields.io/badge/SLSA-level%203-blue?color=%234493f8)](https://github.com/seerge/g-helper/attestations)
@@ -9,7 +11,6 @@
 [![Čeština](https://img.shields.io/badge/-Čeština-555555)](https://github.com/seerge/g-helper/blob/main/docs/README.cs-CZ.md)
 <a href="https://github.com/seerge/g-helper/releases/latest/download/GHelper.exe" alt="G-Helper - Lightweight control tool for Asus laptops"><img width="1280" alt="G-Helper - Lightweight control tool for Asus laptops" src="https://raw.githubusercontent.com/seerge/g-helper/refs/heads/main/docs/app-hero.jpg" /></a>
 
-Small and lightweight Armoury Crate alternative for Asus laptops offering almost same functionality with a much smaller footprint. Works with all popular models, such as ROG Zephyrus G14, G15, G16, M16, Flow X13, Flow X16, Flow Z13, DUO, TUF Series, Strix or Scar Series, ProArt, Vivobook, Zenbook, Expertbook, ROG Ally or Ally X and many more!
 
 <a href="https://github.com/seerge/g-helper/releases/latest/download/GHelper.exe"><img width="250" alt="Download" src="https://raw.githubusercontent.com/seerge/g-helper/main/docs/Download.png" /></a> &nbsp; <a href="https://g-helper.com/support"><img width="250" alt="Support" src="https://raw.githubusercontent.com/seerge/g-helper/main/docs/Support.png" /></a>
 
@@ -19,7 +20,7 @@ Small and lightweight Armoury Crate alternative for Asus laptops offering almost
 - [Setup and Requirements](https://github.com/seerge/g-helper/wiki/Requirements)
 - [Troubleshooting](https://github.com/seerge/g-helper/wiki/Troubleshooting)
 - [Power User Settings](https://github.com/seerge/g-helper/wiki/Power-user-settings)
------------
+
 
 [![United24](https://github.com/user-attachments/assets/aa9444e3-9daa-4b88-a473-7a7f855e3a07)](https://u24.gov.ua/)
 
