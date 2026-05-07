@@ -83,7 +83,7 @@ namespace GHelper
             labelPerf.Text = Properties.Strings.PerformanceMode;
             labelGPU.Text = Properties.Strings.GPUMode;
             labelSreen.Text = Properties.Strings.LaptopScreen;
-            labelKeyboard.Text = Properties.Strings.LaptopKeyboard;
+            UpdateKeyboardLabel();
             labelMatrix.Text = Properties.Strings.AnimeMatrix;
             labelBatteryTitle.Text = Properties.Strings.BatteryChargeLimit;
 
@@ -1584,7 +1584,7 @@ namespace GHelper
             gpuControl.KillGPUApps();
         }
 
-        public async void RefreshSensors(bool force = false)
+        public async void RefreshSensors(bool force = false, bool toast = false)
         {
 
             if (!force && Math.Abs(DateTimeOffset.Now.ToUnixTimeMilliseconds() - lastRefresh) < 2000) return;
@@ -1643,6 +1643,7 @@ namespace GHelper
 
             if (Program.trayIcon is not null) Program.trayIcon.Text = trayTip;
 
+            if (toast) Program.toast.RunToast(trayTip.Replace("\n", ", "));
         }
 
         public void LabelFansResult(string text)
@@ -1961,6 +1962,11 @@ namespace GHelper
 
         }
 
+
+        public void UpdateKeyboardLabel()
+        {
+            labelKeyboard.Text = Properties.Strings.LaptopKeyboard + (PeripheralsProvider.IsAuraSync ? " +" : "");
+        }
 
         public void VisualizePeripherals()
         {
