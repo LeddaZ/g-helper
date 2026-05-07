@@ -1,11 +1,16 @@
 ﻿using GHelper.UI;
 using System.Drawing.Drawing2D;
+using System.Runtime.InteropServices;
 using System.Windows.Forms.DataVisualization.Charting;
 
 public static class ControlHelper
 {
 
+    [DllImport("uxtheme.dll", ExactSpelling = true, CharSet = CharSet.Unicode)]
+    private static extern int SetWindowTheme(IntPtr hWnd, string pszSubAppName, string? pszSubIdList);
+
     static bool _invert = false;
+    static bool _darkMode = false;
     static float _scale = 1;
 
     public static float Scale => _scale;
@@ -17,6 +22,7 @@ public static class ControlHelper
         container.ForeColor = RForm.foreMain;
 
         _invert = invert;
+        _darkMode = container.darkTheme;
         AdjustControls(container.Controls);
         _invert = false;
 
@@ -108,9 +114,11 @@ public static class ControlHelper
             }
 
             var chk = control as CheckBox;
-            if (chk != null && chk.BackColor != RForm.formBack)
+            if (chk != null)
             {
-                chk.BackColor = RForm.buttonSecond;
+                if (chk.BackColor != RForm.formBack)
+                    chk.BackColor = RForm.buttonSecond;
+                SetWindowTheme(chk.Handle, _darkMode ? "DarkMode_Explorer" : "Explorer", null);
             }
 
             var chart = control as Chart;
