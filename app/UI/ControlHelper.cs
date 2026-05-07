@@ -88,11 +88,21 @@ public static class ControlHelper
                 combo.ButtonColor = RForm.buttonMain;
                 combo.ArrowColor = RForm.foreMain;
             }
-            var numbericUpDown = control as NumericUpDown;
-            if(numbericUpDown is not null)
+            var rNumeric = control as RNumericUpDown;
+            if (rNumeric is not null)
+            {
+                rNumeric.ApplyTheme(_darkMode);
+            }
+            else if (control is NumericUpDown numbericUpDown)
             {
                 numbericUpDown.ForeColor = RForm.foreMain;
                 numbericUpDown.BackColor = RForm.buttonMain;
+            }
+
+            var rText = control as RTextBox;
+            if (rText is not null)
+            {
+                rText.ApplyTheme(_darkMode);
             }
 
             var gb = control as GroupBox;
