@@ -9,7 +9,7 @@ namespace GHelper.UI
 
         public RNumericUpDown()
         {
-            BorderStyle = BorderStyle.FixedSingle;
+            BorderStyle = BorderStyle.None;
         }
 
         public void ApplyTheme(bool dark)
