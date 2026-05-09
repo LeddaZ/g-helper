@@ -236,6 +236,7 @@ namespace GHelper
                 Logger.WriteLine("Session:" + e.Reason.ToString());
                 Aura.sessionLock = false;
                 ScreenControl.AutoScreen();
+                Task.Delay(2000).ContinueWith(_ => modeControl.AutoRyzen());
             }
             if (e.Reason == SessionSwitchReason.SessionLock)
             {
@@ -332,6 +333,7 @@ namespace GHelper
         public enum PowerSource { Battery, USBC, Barrel }
 
         public static PowerSource currentSource = PowerSource.Battery;
+        private static PowerLineStatus lastLineStatus = SystemInformation.PowerStatus.PowerLineStatus;
         private static readonly System.Timers.Timer powerSettleTimer = new() { AutoReset = false };
 
         public static PowerSource ReadPowerSource()
@@ -376,7 +378,13 @@ namespace GHelper
                 return;
             }
 
-            Logger.WriteLine($"Power Mode {e.Mode}: {SystemInformation.PowerStatus.PowerLineStatus}");
+            PowerLineStatus status = SystemInformation.PowerStatus.PowerLineStatus;
+            if (status != lastLineStatus)
+            {
+                lastLineStatus = status;
+                Logger.WriteLine($"Power Mode {e.Mode}: {status}");
+            }
+
             SchedulePowerCheck();
         }
 
