@@ -234,9 +234,10 @@ namespace GHelper
             if (e.Reason == SessionSwitchReason.SessionLogon || e.Reason == SessionSwitchReason.SessionUnlock)
             {
                 Logger.WriteLine("Session:" + e.Reason.ToString());
+                bool wasLocked = Aura.sessionLock;
                 Aura.sessionLock = false;
                 ScreenControl.AutoScreen();
-                Task.Delay(2000).ContinueWith(_ => modeControl.AutoRyzen());
+                if (wasLocked) Task.Delay(2000).ContinueWith(_ => modeControl.AutoCPUTemp());
             }
             if (e.Reason == SessionSwitchReason.SessionLock)
             {
