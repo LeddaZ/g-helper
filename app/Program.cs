@@ -224,6 +224,7 @@ namespace GHelper
 
         private static void SystemEvents_SessionEnding(object sender, SessionEndingEventArgs e)
         {
+            gpuControl.StandardModeFix();
             modeControl.ShutdownReset();
             BatteryControl.AutoBattery();
             InputDispatcher.ShutdownStatusLed();
@@ -237,7 +238,11 @@ namespace GHelper
                 bool wasLocked = Aura.sessionLock;
                 Aura.sessionLock = false;
                 ScreenControl.AutoScreen();
-                if (wasLocked) Task.Delay(2000).ContinueWith(_ => modeControl.AutoCPUTemp());
+                if (wasLocked) Task.Delay(2000).ContinueWith(_ =>
+                {
+                    if (Math.Abs(DateTimeOffset.Now.ToUnixTimeMilliseconds() - lastAuto) < 10000) return;
+                    modeControl.AutoCPUTemp();
+                });
             }
             if (e.Reason == SessionSwitchReason.SessionLock)
             {
@@ -374,6 +379,7 @@ namespace GHelper
             if (e.Mode == PowerModes.Suspend)
             {
                 Logger.WriteLine("Power Mode Changed:" + e.Mode.ToString());
+                gpuControl.StandardModeFix();
                 modeControl.ShutdownReset();
                 InputDispatcher.ShutdownStatusLed();
                 return;
