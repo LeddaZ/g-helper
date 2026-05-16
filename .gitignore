@@ -367,6 +367,7 @@ MigrationBackup/
 FodyWeavers.xsd
 
 tools/
+app/*.lscache
 
 # Rider
 .idea/
