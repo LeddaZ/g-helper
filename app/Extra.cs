@@ -37,6 +37,7 @@ namespace GHelper
               {"touchscreen", Properties.Strings.ToggleTouchscreen },
               {"micmute", Properties.Strings.MuteMic},
               {"ghelper", Properties.Strings.OpenGHelper},
+              {"overlay", "Hardware Overlay"},
               {"custom", Properties.Strings.Custom}
             };
 
@@ -151,6 +152,8 @@ namespace GHelper
             labelBacklightLogo.Text = Properties.Strings.Logo;
 
             checkGpuApps.Text = Properties.Strings.KillGpuApps;
+            checkAspm.Text = Properties.Strings.DisablePCIeASPM;
+            checkNVPlatform.Text = Properties.Strings.StopStartNVServices;
             labelHibernateAfter.Text = Properties.Strings.HibernateAfter;
 
             labelAPUMem.Text = Properties.Strings.APUMemory;
@@ -467,9 +470,9 @@ namespace GHelper
             checkKeystoneSound.Checked = Keystone.IsEnabled();
             checkKeystoneSound.CheckedChanged += CheckKeystoneSoundCheckedChanged;
 
-            toolTip.SetToolTip(checkAutoToggleClamshellMode, "Disable sleep on lid close when plugged in and external monitor is connected");
-            toolTip.SetToolTip(checkNVPlatform, "Stops NVIDIA services when the discrete GPU is disabled\nand restarts them automatically when the GPU is enabled");
-            toolTip.SetToolTip(checkAspm, "Prevents PCIe devices from entering low-power idle states.\nRecommended if you experience random hangs or unresponsive hardware.");
+            toolTip.SetToolTip(checkAutoToggleClamshellMode, Properties.Strings.ClamshellModeTooltip);
+            toolTip.SetToolTip(checkNVPlatform, Properties.Strings.NVPlatformTooltip);
+            toolTip.SetToolTip(checkAspm, Properties.Strings.DisablePCIeASPMTooltip);
 
             InitCores();
             InitServices();
