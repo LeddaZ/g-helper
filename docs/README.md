@@ -9,7 +9,7 @@ Small and lightweight Armoury Crate alternative for Asus laptops offering almost
 [![中文](https://img.shields.io/badge/-中文-555555)](https://github.com/seerge/g-helper/blob/main/docs/README.zh-CN.md)
 [![日本語](https://img.shields.io/badge/-日本語-555555)](https://github.com/seerge/g-helper/blob/main/docs/README.ja-JP.md)
 [![Čeština](https://img.shields.io/badge/-Čeština-555555)](https://github.com/seerge/g-helper/blob/main/docs/README.cs-CZ.md)
-<a href="https://github.com/seerge/g-helper/releases/latest/download/GHelper.exe" alt="G-Helper - Lightweight control tool for Asus laptops"><img width="1280" alt="G-Helper - Lightweight control tool for Asus laptops" src="https://raw.githubusercontent.com/seerge/g-helper/refs/heads/main/docs/app-hero.jpg" /></a>
+<a href="https://github.com/LeddaZ/g-helper/releases/latest/download/GHelper.exe" alt="G-Helper - Lightweight control tool for Asus laptops"><img width="1280" alt="G-Helper - Lightweight control tool for Asus laptops" src="https://raw.githubusercontent.com/LeddaZ/g-helper/refs/heads/fork/docs/app-hero.jpg" /></a>
 
 
 ## Changes in this fork
@@ -17,7 +17,7 @@ Small and lightweight Armoury Crate alternative for Asus laptops offering almost
 - Added option in Extra settings to change animation direction
 - Added support for specifiying the monitor to use for Ambient mode (in config.json)
 
-<a href="https://github.com/LeddaZ/g-helper/releases/latest/download/GHelper.exe"><img width="250" alt="Download" src="https://raw.githubusercontent.com/LeddaZ/g-helper/main/docs/Download.png" /></a> &nbsp; <a href="https://g-helper.com/support"><img width="250" alt="Support" src="https://raw.githubusercontent.com/LeddaZ/g-helper/main/docs/Support.png" /></a>
+<a href="https://github.com/LeddaZ/g-helper/releases/latest/download/GHelper.exe"><img width="250" alt="Download" src="https://raw.githubusercontent.com/LeddaZ/g-helper/fork/docs/Download.png" /></a> &nbsp; <a href="https://g-helper.com/support"><img width="250" alt="Support" src="https://raw.githubusercontent.com/LeddaZ/g-helper/fork/docs/Support.png" /></a>
 
 **⭐ Like the app? Help spread the word.**
 
