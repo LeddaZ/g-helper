@@ -907,6 +907,7 @@ Do you still want to continue?</value>
   </data>
   <data name="AnimationDirection" xml:space="preserve">
     <value>Animation Direction</value>
+  </data>
   <data name="DisablePCIeASPM" xml:space="preserve">
     <value>Disable PCIe Link State Management (plugged in)</value>
   </data>
