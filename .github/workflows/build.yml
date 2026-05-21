@@ -51,7 +51,7 @@ jobs:
       - name: Publish
         if: steps.check_commits.outputs.has_new_commits == 'true'
         run: |
-          dotnet publish app/GHelper.sln --configuration Release --runtime win-x64 -p:PublishSingleFile=true --no-self-contained
+          dotnet publish app/GHelper.sln --configuration Release --runtime win-x64 -p:PublishSingleFile=true --no-self-contained -p:EnableUIAccess=true
 
       - name: Verify uiAccess in manifest
         shell: pwsh
