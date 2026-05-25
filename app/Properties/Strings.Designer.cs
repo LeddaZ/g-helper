@@ -167,15 +167,6 @@ namespace GHelper.Properties {
                 return ResourceManager.GetString("AnimationDirection", resourceCulture);
             }
         }
-
-        /// <summary>
-        ///   Looks up a localized string similar to Animation Direction.
-        /// </summary>
-        internal static string AnimationDirection {
-            get {
-                return ResourceManager.GetString("AnimationDirection", resourceCulture);
-            }
-        }
         
         /// <summary>
         ///   Looks up a localized string similar to Animation Speed.
