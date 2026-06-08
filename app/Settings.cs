@@ -1291,11 +1291,13 @@ namespace GHelper
             {
                 labelBacklight.Cursor = Cursors.Hand;
                 labelBacklight.Text = Strings.DisableDynamicLighting;
-            } else if (Aura.Mode == AuraMode.AMBIENT)
+            }
+            else if (Aura.Mode == AuraMode.AMBIENT)
             {
                 labelBacklight.Cursor = Cursors.Default;
                 labelBacklight.Text = Strings.AmbientModeResources;
-            } else
+            }
+            else
             {
                 labelBacklight.Cursor = Cursors.Default;
                 labelBacklight.Text = "";
@@ -1504,7 +1506,8 @@ namespace GHelper
                 buttonHDRControl.Visible = true;
                 buttonHDRControl.Activated = hdrControl > 0;
                 buttonHDRControl.BorderColor = colorTurbo;
-            } else
+            }
+            else
             {
                 buttonHDRControl.Visible = false;
             }
@@ -1657,7 +1660,7 @@ namespace GHelper
             string trayTip = "CPU" + cpuTemp + " " + cpuFan;
             if (gpuTemp.Length > 0) trayTip += "\nGPU" + gpuTemp + " " + gpuFan;
             if (battery.Length > 0) trayTip += "\n" + battery;
-            
+
             if (Program.settingsForm.IsHandleCreated)
                 Program.settingsForm.BeginInvoke(delegate
                 {
@@ -1667,9 +1670,9 @@ namespace GHelper
                     if (HardwareControl.gpuFan is not null && AppConfig.NoGpu())
                         labelMidFan.Text = "GPU" + gpuTemp + " " + gpuFan;
 
-                    if (HardwareControl.midFan is not null) 
+                    if (HardwareControl.midFan is not null)
                         labelMidFan.Text = "Mid " + midFan;
-                    
+
                     labelBattery.Text = battery;
                     if (!batteryMouseOver && !batteryFullMouseOver) labelCharge.Text = charge;
                 });
@@ -2172,7 +2175,7 @@ namespace GHelper
 
         public void VisualiseAudio(double level)
         {
-            int filledSquares = (int)Math.Round(level/2);
+            int filledSquares = (int)Math.Round(level / 2);
             string squares = new string('|', filledSquares);
             Invoke(delegate
             {
