@@ -280,7 +280,7 @@ namespace GHelper.USB
 
         public static bool HasSecondColor()
         {
-            return (mode == AuraMode.AuraBreathe || mode == AuraMode.GRADIENT) && !isACPI;
+            return (mode == AuraMode.AuraBreathe || mode == AuraMode.GRADIENT) && (!isACPI || AppConfig.IsDynamicLightingOnly());
         }
 
         private static void Timer_Elapsed(object? sender, System.Timers.ElapsedEventArgs e)

@@ -693,11 +693,14 @@ namespace GHelper
             sensorTimer.Enabled = this.Visible || sensorsAlways;
             if (this.Visible)
             {
-                ScreenControl.InitScreen();
-                VisualizeXGM();
-                buttonEnergySaver.Visible = PowerNative.GetBatterySaverStatus();
                 Task.Run((Action)RefreshPeripheralsBattery);
                 updateControl.CheckForUpdates();
+                BeginInvoke(new Action(() =>
+                {
+                    ScreenControl.InitScreen();
+                    VisualizeXGM();
+                    buttonEnergySaver.Visible = PowerNative.GetBatterySaverStatus();
+                }));
             }
         }
 
@@ -886,6 +889,13 @@ namespace GHelper
             menuOverlay.Margin = padding;
             menuOverlay.Checked = AppConfig.Is("overlay");
             contextMenuStrip.Items.Add(menuOverlay);
+
+            var menuOverlayGameOnly = new ToolStripMenuItem("Overlay only in games");
+            menuOverlayGameOnly.Click += (sender, args) => ToggleOverlayGameOnly();
+            menuOverlayGameOnly.Margin = padding;
+            menuOverlayGameOnly.Checked = AppConfig.Is("overlay_game_only");
+            menuOverlayGameOnly.Enabled = AppConfig.Is("overlay");
+            contextMenuStrip.Items.Add(menuOverlayGameOnly);
 
             var quit = new ToolStripMenuItem(Properties.Strings.Quit);
             quit.Click += ButtonQuit_Click;
@@ -1396,8 +1406,9 @@ namespace GHelper
 
 
 
-        public void VisualiseScreen(bool screenEnabled, bool screenAuto, int frequency, int maxFrequency, int overdrive, bool overdriveSetting, int miniled1, int miniled2, bool hdr, int fhd, int hdrControl)
+        public void VisualiseScreen(bool screenEnabled, bool screenAuto, int frequency, int maxFrequency, int overdrive, bool overdriveSetting, int miniled1, int miniled2, bool hdr, bool acm, int fhd, int hdrControl)
         {
+            bool advancedColor = hdr || acm;
 
             ButtonEnabled(button60Hz, screenEnabled);
             ButtonEnabled(button120Hz, screenEnabled);
@@ -1407,6 +1418,8 @@ namespace GHelper
             labelSreen.Text = screenEnabled
                 ? Properties.Strings.LaptopScreen + ": " + frequency + "Hz" + ((overdrive == 1) ? " + " + Properties.Strings.Overdrive : "")
                 : Properties.Strings.LaptopScreen + ": " + Properties.Strings.TurnedOff;
+
+            panelScreen.AccessibleName = labelSreen.Text;
 
             button60Hz.Activated = false;
             button120Hz.Activated = false;
@@ -1496,10 +1509,10 @@ namespace GHelper
                 buttonHDRControl.Visible = false;
             }
 
-            if (hdr) labelVisual.Text = Properties.Strings.VisualModesHDR;
+            if (advancedColor) labelVisual.Text = Properties.Strings.VisualModesHDR;
             if (!screenEnabled) labelVisual.Text = Properties.Strings.VisualModesScreen;
 
-            if (!screenEnabled || hdr)
+            if (!screenEnabled || advancedColor)
             {
                 labelVisual.Location = tableVisual.Location;
                 labelVisual.Width = tableVisual.Width;
@@ -1674,10 +1687,22 @@ namespace GHelper
         {
             bool enable = !AppConfig.Is("overlay");
             AppConfig.Set("overlay", enable ? 1 : 0);
+            Logger.WriteLine("Overlay " + (enable ? "On" : "Off") + (AppConfig.Is("overlay_game_only") ? " (game only)" : ""));
             if (enable)
                 Program.hardwareOverlay?.StartOverlay();
             else
                 Program.hardwareOverlay?.StopOverlay();
+            SetContextMenu();
+        }
+
+        public void ToggleOverlayGameOnly()
+        {
+            AppConfig.Set("overlay_game_only", AppConfig.Is("overlay_game_only") ? 0 : 1);
+            if (AppConfig.Is("overlay"))
+            {
+                Program.hardwareOverlay?.StopOverlay();
+                Program.hardwareOverlay?.StartOverlay();
+            }
             SetContextMenu();
         }
 
