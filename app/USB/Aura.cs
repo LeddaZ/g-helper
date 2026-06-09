@@ -678,7 +678,7 @@ namespace GHelper.USB
             if (init || initDirect)
             {
                 initDirect = false;
-                AsusHid.SetFeatureAura(new byte[] { AsusHid.AURA_ID, 0xBC, 1 });
+                AsusHid.SetFeatureAura(new byte[] { AsusHid.AURA_ID, 0xBC });
                 Thread.Sleep(50);
             }
 
@@ -789,7 +789,7 @@ namespace GHelper.USB
             {
                 initDirect = false;
                 //Init();
-                AsusHid.SetFeatureAura(new byte[] { AsusHid.AURA_ID, 0xBC });
+                AsusHid.SetFeatureAura(new byte[] { AsusHid.AURA_ID, 0xBC, 1 });
                 Thread.Sleep(50);
             }
 
