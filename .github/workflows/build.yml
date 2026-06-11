@@ -84,7 +84,7 @@ jobs:
 
       - name: Create Release
         if: steps.check_commits.outputs.has_new_commits == 'true'
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ steps.generate_tag.outputs.tag }}
           name: Release ${{ steps.generate_tag.outputs.tag }}
