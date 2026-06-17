@@ -44,26 +44,26 @@ namespace GHelper
             tableBindings = new TableLayoutPanel();
             labelFNE = new Label();
             comboFNE = new RComboBox();
-            textFNE = new TextBox();
+            textFNE = new RTextBox();
             labelFNV = new Label();
             comboFNV = new RComboBox();
-            textFNV = new TextBox();
+            textFNV = new RTextBox();
             labelFNC = new Label();
             comboFNC = new RComboBox();
-            textFNC = new TextBox();
+            textFNC = new RTextBox();
             labelFNF4 = new Label();
             comboFNF4 = new RComboBox();
-            textFNF4 = new TextBox();
+            textFNF4 = new RTextBox();
             comboM4 = new RComboBox();
-            textM4 = new TextBox();
+            textM4 = new RTextBox();
             labelM4 = new Label();
             comboM3 = new RComboBox();
-            textM3 = new TextBox();
+            textM3 = new RTextBox();
             labelM3 = new Label();
-            textM2 = new TextBox();
+            textM2 = new RTextBox();
             labelM2 = new Label();
             comboM2 = new RComboBox();
-            textM1 = new TextBox();
+            textM1 = new RTextBox();
             comboM1 = new RComboBox();
             labelM1 = new Label();
             tableKeys = new TableLayoutPanel();
@@ -78,8 +78,8 @@ namespace GHelper
             labelBacklightTimeout = new Label();
             labelSpeed = new Label();
             comboKeyboardSpeed = new RComboBox();
-            panelXMG = new Panel();
-            checkXMG = new CheckBox();
+            panelXGM = new Panel();
+            checkXGM = new CheckBox();
             tableBacklight = new TableLayoutPanel();
             labelBacklightKeyboard = new Label();
             checkAwake = new CheckBox();
@@ -112,16 +112,15 @@ namespace GHelper
             labelSettings = new Label();
             panelSettings = new Panel();
             checkAutoToggleClamshellMode = new CheckBox();
-            checkBWIcon = new CheckBox();
             checkTopmost = new CheckBox();
             checkNoOverdrive = new CheckBox();
             checkBootSound = new CheckBox();
+            checkKeystoneSound = new CheckBox();
             checkUSBC = new CheckBox();
             checkGpuApps = new CheckBox();
-            checkGPUFix = new CheckBox();
             checkNVPlatform = new CheckBox();
             checkStatusLed = new CheckBox();
-            checkPerKeyRGB = new CheckBox();
+            checkAspm = new CheckBox();
             panelPower = new Panel();
             numericHibernateAfter = new NumericUpDownWithUnit();
             labelHibernateAfter = new Label();
@@ -136,10 +135,10 @@ namespace GHelper
             comboCoresP = new RComboBox();
             comboCoresE = new RComboBox();
             pictureCores = new PictureBox();
-            label1 = new Label();
+            labelCores = new Label();
             panelACPI = new Panel();
-            textACPIParam = new TextBox();
-            textACPICommand = new TextBox();
+            textACPIParam = new RTextBox();
+            textACPICommand = new RTextBox();
             buttonACPISend = new RButton();
             pictureDebug = new PictureBox();
             labelACPITitle = new Label();
@@ -160,7 +159,7 @@ namespace GHelper
             panelBacklightExtra.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)numericBacklightPluggedTime).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numericBacklightTime).BeginInit();
-            panelXMG.SuspendLayout();
+            panelXGM.SuspendLayout();
             tableBacklight.SuspendLayout();
             panelSettingsHeader.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureScan).BeginInit();
@@ -645,7 +644,7 @@ namespace GHelper
             panelBacklightHeader.Name = "panelBacklightHeader";
             panelBacklightHeader.Padding = new Padding(11, 5, 11, 5);
             panelBacklightHeader.Size = new Size(949, 51);
-            panelBacklightHeader.TabIndex = 44;
+            panelBacklightHeader.TabIndex = 2;
             // 
             // sliderBrightness
             // 
@@ -658,7 +657,7 @@ namespace GHelper
             sliderBrightness.Size = new Size(501, 40);
             sliderBrightness.Step = 1;
             sliderBrightness.TabIndex = 50;
-            sliderBrightness.TabStop = false;
+            sliderBrightness.TabStop = true;
             sliderBrightness.Text = "sliderBrightness";
             sliderBrightness.Value = 3;
             // 
@@ -686,14 +685,14 @@ namespace GHelper
             // 
             panelBacklight.AutoSize = true;
             panelBacklight.Controls.Add(panelBacklightExtra);
-            panelBacklight.Controls.Add(panelXMG);
+            panelBacklight.Controls.Add(panelXGM);
             panelBacklight.Controls.Add(tableBacklight);
             panelBacklight.Dock = DockStyle.Top;
             panelBacklight.Location = new Point(15, 512);
             panelBacklight.Name = "panelBacklight";
             panelBacklight.Padding = new Padding(0, 5, 0, 5);
             panelBacklight.Size = new Size(949, 444);
-            panelBacklight.TabIndex = 2;
+            panelBacklight.TabIndex = 3;
             // 
             // panelBacklightExtra
             // 
@@ -762,7 +761,6 @@ namespace GHelper
             comboKeyboardSpeed.FlatStyle = FlatStyle.Flat;
             comboKeyboardSpeed.Font = new Font("Segoe UI", 9F);
             comboKeyboardSpeed.FormattingEnabled = true;
-            comboKeyboardSpeed.ItemHeight = 32;
             comboKeyboardSpeed.Items.AddRange(new object[] { "Slow", "Normal", "Fast" });
             comboKeyboardSpeed.Location = new Point(634, 13);
             comboKeyboardSpeed.Margin = new Padding(5, 11, 5, 9);
@@ -773,25 +771,25 @@ namespace GHelper
             // 
             // panelXMG
             // 
-            panelXMG.Controls.Add(checkXMG);
-            panelXMG.Dock = DockStyle.Top;
-            panelXMG.Location = new Point(0, 265);
-            panelXMG.Margin = new Padding(5, 3, 5, 3);
-            panelXMG.Name = "panelXMG";
-            panelXMG.Size = new Size(949, 59);
-            panelXMG.TabIndex = 45;
+            panelXGM.Controls.Add(checkXGM);
+            panelXGM.Dock = DockStyle.Top;
+            panelXGM.Location = new Point(0, 265);
+            panelXGM.Margin = new Padding(5, 3, 5, 3);
+            panelXGM.Name = "panelXMG";
+            panelXGM.Size = new Size(949, 59);
+            panelXGM.TabIndex = 45;
             // 
             // checkXMG
             // 
-            checkXMG.AutoSize = true;
-            checkXMG.Location = new Point(5, 11);
-            checkXMG.Margin = new Padding(5, 3, 5, 3);
-            checkXMG.Name = "checkXMG";
-            checkXMG.Padding = new Padding(16, 3, 7, 3);
-            checkXMG.Size = new Size(181, 42);
-            checkXMG.TabIndex = 2;
-            checkXMG.Text = "XG Mobile";
-            checkXMG.UseVisualStyleBackColor = true;
+            checkXGM.AutoSize = true;
+            checkXGM.Location = new Point(5, 11);
+            checkXGM.Margin = new Padding(5, 3, 5, 3);
+            checkXGM.Name = "checkXMG";
+            checkXGM.Padding = new Padding(16, 3, 7, 3);
+            checkXGM.Size = new Size(181, 42);
+            checkXGM.TabIndex = 2;
+            checkXGM.Text = "XG Mobile";
+            checkXGM.UseVisualStyleBackColor = true;
             // 
             // tableBacklight
             // 
@@ -1195,22 +1193,21 @@ namespace GHelper
             panelSettings.AutoSize = true;
             panelSettings.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             panelSettings.Controls.Add(checkAutoToggleClamshellMode);
-            panelSettings.Controls.Add(checkBWIcon);
             panelSettings.Controls.Add(checkTopmost);
             panelSettings.Controls.Add(checkNoOverdrive);
+            panelSettings.Controls.Add(checkKeystoneSound);
             panelSettings.Controls.Add(checkBootSound);
             panelSettings.Controls.Add(checkUSBC);
             panelSettings.Controls.Add(checkGpuApps);
-            panelSettings.Controls.Add(checkGPUFix);
             panelSettings.Controls.Add(checkNVPlatform);
             panelSettings.Controls.Add(checkStatusLed);
-            panelSettings.Controls.Add(checkPerKeyRGB);
+            panelSettings.Controls.Add(checkAspm);
             panelSettings.Dock = DockStyle.Top;
             panelSettings.Location = new Point(15, 1252);
             panelSettings.Name = "panelSettings";
             panelSettings.Padding = new Padding(21, 5, 11, 5);
             panelSettings.Size = new Size(949, 472);
-            panelSettings.TabIndex = 3;
+            panelSettings.TabIndex = 50;
             // 
             // checkAutoToggleClamshellMode
             // 
@@ -1220,23 +1217,10 @@ namespace GHelper
             checkAutoToggleClamshellMode.Name = "checkAutoToggleClamshellMode";
             checkAutoToggleClamshellMode.Padding = new Padding(3);
             checkAutoToggleClamshellMode.Size = new Size(917, 42);
-            checkAutoToggleClamshellMode.TabIndex = 8;
+            checkAutoToggleClamshellMode.TabIndex = 9;
             checkAutoToggleClamshellMode.Text = "Auto Toggle Clamshell Mode";
             checkAutoToggleClamshellMode.UseVisualStyleBackColor = true;
-            // 
-            // checkBWIcon
-            // 
-            checkBWIcon.AutoSize = true;
-            checkBWIcon.Dock = DockStyle.Top;
-            checkBWIcon.Location = new Point(21, 383);
-            checkBWIcon.Margin = new Padding(5, 3, 5, 3);
-            checkBWIcon.Name = "checkBWIcon";
-            checkBWIcon.Padding = new Padding(3);
-            checkBWIcon.Size = new Size(917, 42);
-            checkBWIcon.TabIndex = 11;
-            checkBWIcon.Text = "Black and white tray icon";
-            checkBWIcon.UseVisualStyleBackColor = true;
-            // 
+            //
             // checkTopmost
             // 
             checkTopmost.AutoSize = true;
@@ -1246,7 +1230,7 @@ namespace GHelper
             checkTopmost.Name = "checkTopmost";
             checkTopmost.Padding = new Padding(3);
             checkTopmost.Size = new Size(917, 42);
-            checkTopmost.TabIndex = 6;
+            checkTopmost.TabIndex = 8;
             checkTopmost.Text = Strings.WindowTop;
             checkTopmost.UseVisualStyleBackColor = true;
             // 
@@ -1259,7 +1243,7 @@ namespace GHelper
             checkNoOverdrive.Name = "checkNoOverdrive";
             checkNoOverdrive.Padding = new Padding(3);
             checkNoOverdrive.Size = new Size(917, 42);
-            checkNoOverdrive.TabIndex = 5;
+            checkNoOverdrive.TabIndex = 7;
             checkNoOverdrive.Text = Strings.DisableOverdrive;
             checkNoOverdrive.UseVisualStyleBackColor = true;
             // 
@@ -1272,9 +1256,23 @@ namespace GHelper
             checkBootSound.Name = "checkBootSound";
             checkBootSound.Padding = new Padding(3);
             checkBootSound.Size = new Size(917, 42);
-            checkBootSound.TabIndex = 10;
+            checkBootSound.TabIndex = 5;
             checkBootSound.Text = "Boot Sound";
             checkBootSound.UseVisualStyleBackColor = true;
+            //
+            // checkKeystoneSound
+            //
+            checkKeystoneSound.AutoSize = true;
+            checkKeystoneSound.Dock = DockStyle.Top;
+            checkKeystoneSound.Location = new Point(21, 299);
+            checkKeystoneSound.Margin = new Padding(5, 3, 5, 3);
+            checkKeystoneSound.Name = "checkKeystoneSound";
+            checkKeystoneSound.Padding = new Padding(3);
+            checkKeystoneSound.Size = new Size(917, 42);
+            checkKeystoneSound.TabIndex = 6;
+            checkKeystoneSound.Text = "Keystone Sound";
+            checkKeystoneSound.UseVisualStyleBackColor = true;
+            checkKeystoneSound.Visible = false;
             // 
             // checkUSBC
             // 
@@ -1298,23 +1296,10 @@ namespace GHelper
             checkGpuApps.Name = "checkGpuApps";
             checkGpuApps.Padding = new Padding(3);
             checkGpuApps.Size = new Size(917, 42);
-            checkGpuApps.TabIndex = 2;
+            checkGpuApps.TabIndex = 3;
             checkGpuApps.Text = "Stop all apps using GPU when switching to Eco";
             checkGpuApps.UseVisualStyleBackColor = true;
-            // 
-            // checkGPUFix
-            // 
-            checkGPUFix.AutoSize = true;
-            checkGPUFix.Dock = DockStyle.Top;
-            checkGPUFix.Location = new Point(21, 131);
-            checkGPUFix.Margin = new Padding(5, 3, 5, 3);
-            checkGPUFix.Name = "checkGPUFix";
-            checkGPUFix.Padding = new Padding(3);
-            checkGPUFix.Size = new Size(917, 42);
-            checkGPUFix.TabIndex = 9;
-            checkGPUFix.Text = "Enable GPU on shutdown (prevents issue with Eco mode)";
-            checkGPUFix.UseVisualStyleBackColor = true;
-            // 
+            //
             // checkNVPlatform
             // 
             checkNVPlatform.AutoSize = true;
@@ -1324,7 +1309,7 @@ namespace GHelper
             checkNVPlatform.Name = "checkNVPlatform";
             checkNVPlatform.Padding = new Padding(3);
             checkNVPlatform.Size = new Size(917, 42);
-            checkNVPlatform.TabIndex = 15;
+            checkNVPlatform.TabIndex = 2;
             checkNVPlatform.Text = "Stop/Start NVIDIA services based on dGPU state";
             checkNVPlatform.UseVisualStyleBackColor = true;
             // 
@@ -1337,24 +1322,24 @@ namespace GHelper
             checkStatusLed.Name = "checkStatusLed";
             checkStatusLed.Padding = new Padding(3);
             checkStatusLed.Size = new Size(917, 42);
-            checkStatusLed.TabIndex = 12;
+            checkStatusLed.TabIndex = 1;
             checkStatusLed.Text = "LED Status Indicators";
             checkStatusLed.UseVisualStyleBackColor = true;
             checkStatusLed.Visible = false;
-            // 
-            // checkPerKeyRGB
-            // 
-            checkPerKeyRGB.AutoSize = true;
-            checkPerKeyRGB.Dock = DockStyle.Top;
-            checkPerKeyRGB.Location = new Point(21, 5);
-            checkPerKeyRGB.Margin = new Padding(5, 3, 5, 3);
-            checkPerKeyRGB.Name = "checkPerKeyRGB";
-            checkPerKeyRGB.Padding = new Padding(3);
-            checkPerKeyRGB.Size = new Size(917, 42);
-            checkPerKeyRGB.TabIndex = 13;
-            checkPerKeyRGB.Text = "Per-Key RGB Keyboard";
-            checkPerKeyRGB.UseVisualStyleBackColor = true;
-            checkPerKeyRGB.Visible = false;
+            //
+            // checkAspm
+            //
+            checkAspm.AutoSize = true;
+            checkAspm.Dock = DockStyle.Top;
+            checkAspm.Location = new Point(21, 5);
+            checkAspm.Margin = new Padding(5, 3, 5, 3);
+            checkAspm.Name = "checkAspm";
+            checkAspm.Padding = new Padding(3);
+            checkAspm.Size = new Size(917, 42);
+            checkAspm.TabIndex = 0;
+            checkAspm.Text = "Disable PCIe Link State Management (plugged in)";
+            checkAspm.UseVisualStyleBackColor = true;
+            checkAspm.Visible = true;
             // 
             // panelPower
             // 
@@ -1423,7 +1408,6 @@ namespace GHelper
             comboAPU.FlatStyle = FlatStyle.Flat;
             comboAPU.Font = new Font("Segoe UI", 9F);
             comboAPU.FormattingEnabled = true;
-            comboAPU.ItemHeight = 32;
             comboAPU.Items.AddRange(new object[] { "Auto", "1G", "2G", "3G", "4G", "5G", "6G", "7G", "8G" });
             comboAPU.Location = new Point(618, 8);
             comboAPU.Margin = new Padding(5, 11, 5, 9);
@@ -1459,7 +1443,7 @@ namespace GHelper
             panelCores.Controls.Add(comboCoresP);
             panelCores.Controls.Add(comboCoresE);
             panelCores.Controls.Add(pictureCores);
-            panelCores.Controls.Add(label1);
+            panelCores.Controls.Add(labelCores);
             panelCores.Dock = DockStyle.Top;
             panelCores.Location = new Point(15, 1076);
             panelCores.Name = "panelCores";
@@ -1480,7 +1464,7 @@ namespace GHelper
             buttonCores.Margin = new Padding(5, 3, 5, 3);
             buttonCores.Name = "buttonCores";
             buttonCores.Secondary = false;
-            buttonCores.Size = new Size(106, 44);
+            buttonCores.Size = new Size(106, 48);
             buttonCores.TabIndex = 20;
             buttonCores.Text = "Apply";
             buttonCores.UseVisualStyleBackColor = false;
@@ -1493,7 +1477,6 @@ namespace GHelper
             comboCoresP.FlatStyle = FlatStyle.Flat;
             comboCoresP.Font = new Font("Segoe UI", 9F);
             comboCoresP.FormattingEnabled = true;
-            comboCoresP.ItemHeight = 32;
             comboCoresP.Location = new Point(513, 10);
             comboCoresP.Margin = new Padding(5, 11, 5, 9);
             comboCoresP.Name = "comboCoresP";
@@ -1509,7 +1492,6 @@ namespace GHelper
             comboCoresE.FlatStyle = FlatStyle.Flat;
             comboCoresE.Font = new Font("Segoe UI", 9F);
             comboCoresE.FormattingEnabled = true;
-            comboCoresE.ItemHeight = 32;
             comboCoresE.Location = new Point(674, 10);
             comboCoresE.Margin = new Padding(5, 11, 5, 9);
             comboCoresE.Name = "comboCoresE";
@@ -1526,16 +1508,16 @@ namespace GHelper
             pictureCores.Size = new Size(32, 32);
             pictureCores.TabIndex = 1;
             pictureCores.TabStop = false;
-            // 
-            // label1
-            // 
-            label1.AutoSize = true;
-            label1.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
-            label1.Location = new Point(64, 14);
-            label1.Name = "label1";
-            label1.Size = new Size(299, 32);
-            label1.TabIndex = 0;
-            label1.Text = "CPU Cores Configuration";
+            //
+            // labelCores
+            //
+            labelCores.AutoSize = true;
+            labelCores.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+            labelCores.Location = new Point(64, 14);
+            labelCores.Name = "labelCores";
+            labelCores.Size = new Size(299, 32);
+            labelCores.TabIndex = 0;
+            labelCores.Text = "CPU Cores Configuration";
             // 
             // panelACPI
             // 
@@ -1632,7 +1614,6 @@ namespace GHelper
             comboOptimalBrightness.FlatStyle = FlatStyle.Flat;
             comboOptimalBrightness.Font = new Font("Segoe UI", 9F);
             comboOptimalBrightness.FormattingEnabled = true;
-            comboOptimalBrightness.ItemHeight = 32;
             comboOptimalBrightness.Items.AddRange(new object[] { "Off", "On Always", "On Battery" });
             comboOptimalBrightness.Location = new Point(618, 11);
             comboOptimalBrightness.Margin = new Padding(5, 11, 5, 9);
@@ -1711,8 +1692,8 @@ namespace GHelper
             panelBacklightExtra.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)numericBacklightPluggedTime).EndInit();
             ((System.ComponentModel.ISupportInitialize)numericBacklightTime).EndInit();
-            panelXMG.ResumeLayout(false);
-            panelXMG.PerformLayout();
+            panelXGM.ResumeLayout(false);
+            panelXGM.PerformLayout();
             tableBacklight.ResumeLayout(false);
             panelSettingsHeader.ResumeLayout(false);
             panelSettingsHeader.PerformLayout();
@@ -1750,25 +1731,25 @@ namespace GHelper
         private TableLayoutPanel tableBindings;
         private Label labelFNC;
         private Label labelFNV;
-        private TextBox textM2;
-        private TextBox textM1;
+        private RTextBox textM2;
+        private RTextBox textM1;
         private RComboBox comboM1;
         private Label labelM1;
         private RComboBox comboM4;
         private RComboBox comboM3;
-        private TextBox textM4;
-        private TextBox textM3;
+        private RTextBox textM4;
+        private RTextBox textM3;
         private Label labelM4;
         private Label labelM3;
         private Label labelM2;
         private RComboBox comboM2;
         private Label labelFNF4;
         private RComboBox comboFNF4;
-        private TextBox textFNF4;
+        private RTextBox textFNF4;
         private RComboBox comboFNC;
         private RComboBox comboFNV;
-        private TextBox textFNC;
-        private TextBox textFNV;
+        private RTextBox textFNC;
+        private RTextBox textFNV;
         private PictureBox pictureHelp;
         private TableLayoutPanel tableKeys;
         private PictureBox pictureBindings;
@@ -1781,8 +1762,8 @@ namespace GHelper
         private Label labelBacklightTimeout;
         private Label labelSpeed;
         private RComboBox comboKeyboardSpeed;
-        private Panel panelXMG;
-        private CheckBox checkXMG;
+        private Panel panelXGM;
+        private CheckBox checkXGM;
         private TableLayoutPanel tableBacklight;
         private Label labelBacklightKeyboard;
         private CheckBox checkAwake;
@@ -1820,15 +1801,15 @@ namespace GHelper
         private CheckBox checkAutoToggleClamshellMode;
         private Label labelFNE;
         private RComboBox comboFNE;
-        private TextBox textFNE;
+        private RTextBox textFNE;
         private Slider slider1;
         private Panel panelPower;
         private PictureBox pictureHibernate;
         private Label labelHibernateAfter;
         private NumericUpDownWithUnit numericHibernateAfter;
-        private CheckBox checkGPUFix;
         private ToolTip toolTip;
         private CheckBox checkBootSound;
+        private CheckBox checkKeystoneSound;
         private Panel panelAPU;
         private PictureBox pictureAPUMem;
         private Label labelAPUMem;
@@ -1837,18 +1818,17 @@ namespace GHelper
         private Panel panelCores;
         private RComboBox comboCoresE;
         private PictureBox pictureCores;
-        private Label label1;
+        private Label labelCores;
         private RComboBox comboCoresP;
         private RButton buttonCores;
         private Panel panelACPI;
-        private TextBox textACPIParam;
-        private TextBox textACPICommand;
+        private RTextBox textACPIParam;
+        private RTextBox textACPICommand;
         private RButton buttonACPISend;
         private PictureBox pictureDebug;
         private Label labelACPITitle;
-        private CheckBox checkBWIcon;
         private CheckBox checkStatusLed;
-        private CheckBox checkPerKeyRGB;
+        private CheckBox checkAspm;
         private CheckBox checkBatteryLogo;
         private CheckBox checkBattery;
         private CheckBox checkBatteryLid;

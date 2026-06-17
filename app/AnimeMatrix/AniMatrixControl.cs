@@ -49,10 +49,7 @@ namespace GHelper.AnimeMatrix
             {
                 if (AppConfig.IsSlash())
                 {
-                    if (AppConfig.IsSlashAura())
-                        deviceSlash = new SlashDeviceAura();
-                    else
-                        deviceSlash = new SlashDevice();
+                    deviceSlash = SlashDevice.Detect();
                 }
                 else
                 {
@@ -333,11 +330,10 @@ namespace GHelper.AnimeMatrix
         {
             if (deviceSlash is null) return;
 
-            //kill timer if called but not in battery pattern mode
+            //stop timer if called but not in battery pattern mode
             if ((SlashMode)AppConfig.Get("matrix_running", 0) != SlashMode.BatteryLevel)
             {
                 slashTimer.Stop();
-                slashTimer.Dispose();
                 return;
             }
 
@@ -348,6 +344,10 @@ namespace GHelper.AnimeMatrix
         public void Dispose()
         {
             StopAudio();
+            matrixTimer?.Stop();
+            matrixTimer?.Dispose();
+            slashTimer?.Stop();
+            slashTimer?.Dispose();
         }
 
         void StopAudio()

@@ -1,6 +1,5 @@
-﻿using GHelper.USB;
+using GHelper.USB;
 using HidSharp;
-using System.Text;
 
 namespace GHelper.Input
 {
@@ -9,19 +8,19 @@ namespace GHelper.Input
 
         CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
         Action<int> _handler;
-
-        static int retry = 0;
+        HidStream? input;
 
         public KeyboardListener(Action<int> KeyHandler)
         {
             _handler = KeyHandler;
-            var task = Task.Run(Listen);
+            var task = Task.Run(() => { while (Listen()) { } });
         }
 
-        private void Listen()
+        private bool Listen()
         {
 
-            HidStream? input = AsusHid.FindHidStream(AsusHid.INPUT_ID);
+            try { input?.Dispose(); } catch { }
+            input = AsusHid.FindHidStream(AsusHid.INPUT_ID);
 
             // Fallback
             int count = 0;
@@ -35,10 +34,10 @@ namespace GHelper.Input
             if (input == null)
             {
                 Logger.WriteLine($"Input device not found");
-                return;
+                return false;
             }
 
-            AsusHid.WriteInput(Encoding.ASCII.GetBytes("ZASUS Tech.Inc."));
+            AsusHid.InitInput();
             Logger.WriteLine($"Input: {input.Device.DevicePath}");
 
             try
@@ -70,19 +69,21 @@ namespace GHelper.Input
             catch (Exception ex)
             {
                 Logger.WriteLine($"Listener exited: {ex.Message}");
-                if (retry++ < 2)
+                if (!cancellationTokenSource.Token.IsCancellationRequested)
                 {
                     Thread.Sleep(300);
-                    Logger.WriteLine($"Restarting listener {retry}");
-                    Listen();
+                    Logger.WriteLine($"Restarting listener");
+                    return true;
                 }
             }
 
+            return false;
         }
 
         public void Dispose()
         {
             cancellationTokenSource?.Cancel();
+            input?.Dispose();
         }
     }
 }
