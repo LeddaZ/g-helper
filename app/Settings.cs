@@ -46,6 +46,7 @@ namespace GHelper
         static long lastLostFocus;
 
         bool isGpuSection = true;
+        bool isMuxGpu = true;
 
         bool batteryMouseOver = false;
         bool batteryFullMouseOver = false;
@@ -865,6 +866,7 @@ namespace GHelper
                 menuUltimate.Click += ButtonUltimate_Click;
                 menuUltimate.Margin = padding;
                 menuUltimate.Checked = buttonUltimate.Activated;
+                menuUltimate.Visible = isMuxGpu;
                 contextMenuStrip.Items.Add(menuUltimate);
 
                 menuOptimized = new ToolStripMenuItem(Properties.Strings.Optimized);
@@ -1616,7 +1618,7 @@ namespace GHelper
             string charge = "";
 
             await Task.Run(() => HardwareControl.ReadSensors());
-            if (Visible) Task.Run((Action)PeripheralsProvider.RefreshBatteryForAllDevices);
+            if (Visible) _ = Task.Run((Action)PeripheralsProvider.RefreshBatteryForAllDevices);
 
             if (HardwareControl.cpuTemp > 0)
                 cpuTemp = ": " + TempHelper.FormatTemp((double)HardwareControl.cpuTemp);
@@ -1803,6 +1805,8 @@ namespace GHelper
 
         public void VisualiseGPUButtons(bool eco = true, bool ultimate = true)
         {
+            isMuxGpu = ultimate;
+
             if (!eco)
             {
                 menuEco.Visible = buttonEco.Visible = false;

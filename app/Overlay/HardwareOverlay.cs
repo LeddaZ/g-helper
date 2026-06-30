@@ -761,6 +761,15 @@ namespace GHelper.Overlay
             Location = new Point(screen.Bounds.X + MarginFromEdge, screen.Bounds.Y + MarginFromEdge);
         }
 
+        private static Screen TargetScreen()
+        {
+            string name = AppConfig.GetString("overlay_screen");
+            if (!string.IsNullOrEmpty(name))
+                foreach (Screen s in Screen.AllScreens)
+                    if (s.DeviceName == name) return s;
+            return Screen.PrimaryScreen ?? Screen.AllScreens[0];
+        }
+
         private bool AreDragKeysDown() =>
             (GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0 &&
             (GetAsyncKeyState(VK_SHIFT)   & 0x8000) != 0 &&
@@ -804,6 +813,7 @@ namespace GHelper.Overlay
             bool isRight  = center.X > screen.Bounds.X + screen.Bounds.Width  / 2;
             bool isBottom = center.Y > screen.Bounds.Y + screen.Bounds.Height / 2;
             int anchor  = (isBottom ? 2 : 0) | (isRight ? 1 : 0);
+            AppConfig.Set("overlay_screen", screen.DeviceName);
             int offsetX = isRight  ? screen.Bounds.Right  - Location.X - Width  : Location.X - screen.Bounds.X;
             int offsetY = isBottom ? screen.Bounds.Bottom - Location.Y - Height : Location.Y - screen.Bounds.Y;
             AppConfig.Set("overlay_anchor",   anchor);
@@ -886,14 +896,14 @@ namespace GHelper.Overlay
             if (anchor < 0) { PositionAtTopLeft(); return; }
             int offsetX = AppConfig.Get("overlay_offset_x", MarginFromEdge);
             int offsetY = AppConfig.Get("overlay_offset_y", MarginFromEdge);
-            Screen screen = Screen.PrimaryScreen ?? Screen.AllScreens[0];
+            Screen screen = TargetScreen();
             bool isRight  = (anchor & 1) != 0;
             bool isBottom = (anchor & 2) != 0;
             int x = isRight  ? screen.Bounds.Right  - Width  - offsetX : screen.Bounds.X + offsetX;
             int y = isBottom ? screen.Bounds.Bottom - Height - offsetY : screen.Bounds.Y + offsetY;
             const int margin = 5;
-            x = Math.Clamp(x, screen.Bounds.Left + margin, screen.Bounds.Right  - Width  - margin);
-            y = Math.Clamp(y, screen.Bounds.Top  + margin, screen.Bounds.Bottom - Height - margin);
+            x = Math.Max(screen.Bounds.Left + margin, Math.Min(x, screen.Bounds.Right  - Width  - margin));
+            y = Math.Max(screen.Bounds.Top  + margin, Math.Min(y, screen.Bounds.Bottom - Height - margin));
             Location = new Point(x, y);
         }
 

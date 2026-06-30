@@ -8,7 +8,8 @@ namespace GHelper.AutoUpdate
 {
     public class AutoUpdateControl
     {
-        private readonly SettingsForm settings;
+
+        readonly SettingsForm settings;
 
         public string versionUrl = "https://github.com/LeddaZ/g-helper/releases";
         public bool update = false;
@@ -18,7 +19,7 @@ namespace GHelper.AutoUpdate
         public AutoUpdateControl(SettingsForm settingsForm)
         {
             settings = settingsForm;
-            Version appVersion = new((Assembly.GetExecutingAssembly().GetName().Version ?? new Version(0, 0, 0)).ToString());
+            var appVersion = new Version(Assembly.GetExecutingAssembly().GetName().Version.ToString());
             settings.SetVersionLabel(Properties.Strings.VersionLabel + $": {appVersion.Major}.{appVersion.Minor}.{appVersion.Build}");
         }
 
@@ -43,7 +44,8 @@ namespace GHelper.AutoUpdate
                 {
                     CheckForUpdatesAsync(true);
                 });
-            } else
+            }
+            else
             {
                 LoadReleases();
             }
@@ -61,20 +63,22 @@ namespace GHelper.AutoUpdate
             }
         }
 
-        private async void CheckForUpdatesAsync(bool force = false)
+        async void CheckForUpdatesAsync(bool force = false)
         {
+
             if (AppConfig.Is("skip_updates")) return;
 
             try
             {
-                using HttpClient httpClient = new();
-                httpClient.DefaultRequestHeaders.Add("User-Agent", "G-Helper App");
-                string json = await httpClient.GetStringAsync("https://api.github.com/repos/LeddaZ/g-helper/releases/latest");
-                JsonElement config = JsonSerializer.Deserialize<JsonElement>(json);
-                string tag = config.GetProperty("tag_name").ToString().Replace("v", "");
-                JsonElement assets = config.GetProperty("assets");
 
-                string url = string.Empty;
+                using var httpClient = new HttpClient();
+                httpClient.DefaultRequestHeaders.Add("User-Agent", "G-Helper App");
+                var json = await httpClient.GetStringAsync("https://api.github.com/repos/LeddaZ/g-helper/releases/latest");
+                var config = JsonSerializer.Deserialize<JsonElement>(json);
+                var tag = config.GetProperty("tag_name").ToString().Replace("v", "");
+                var assets = config.GetProperty("assets");
+
+                string url = null;
 
                 for (int i = 0; i < assets.GetArrayLength(); i++)
                 {
@@ -84,8 +88,9 @@ namespace GHelper.AutoUpdate
 
                 url ??= assets[0].GetProperty("browser_download_url").ToString();
 
-                Version gitVersion = new(tag);
-                Version appVersion = new((Assembly.GetExecutingAssembly().GetName().Version ?? new Version(0, 0, 0)).ToString());
+                var gitVersion = new Version(tag);
+                var appVersion = new Version(Assembly.GetExecutingAssembly().GetName().Version.ToString());
+                //appVersion = new Version("0.50.0.0"); 
 
                 if (gitVersion.CompareTo(appVersion) > 0)
                 {
@@ -114,6 +119,7 @@ namespace GHelper.AutoUpdate
                         else
                             AppConfig.Set("skip_version", tag);
                     }
+
                 }
                 else
                 {
@@ -122,7 +128,7 @@ namespace GHelper.AutoUpdate
             }
             catch (Exception ex)
             {
-                Logger.WriteLine($"Failed to check for updates: {ex.Message}");
+                Logger.WriteLine("Failed to check for updates:" + ex.Message);
             }
 
         }
@@ -132,28 +138,31 @@ namespace GHelper.AutoUpdate
             return Regex.Replace(Regex.Replace(input, @"\[|\]", "`$0"), @"\'", "''");
         }
 
-        private async void AutoUpdate(string requestUri)
+        async void AutoUpdate(string requestUri)
         {
 
             Uri uri = new(requestUri);
             string zipName = Path.GetFileName(uri.LocalPath);
 
             string exeLocation = Application.ExecutablePath;
+            string exeDir = Path.GetDirectoryName(exeLocation);
+            //exeDir = "C:\\Program Files\\GHelper";
             string exeName = Path.GetFileName(exeLocation);
-            string zipLocation = Path.GetDirectoryName(exeLocation) + "\\" + zipName;
+            string zipLocation = exeDir + "\\" + zipName;
 
             using HttpClient client = new();
+
+            client.DefaultRequestHeaders.Add("User-Agent", "G-Helper App");
             Logger.WriteLine(requestUri);
-            Logger.WriteLine(Path.GetDirectoryName(exeLocation));
+            Logger.WriteLine(exeDir);
             Logger.WriteLine(zipName);
             Logger.WriteLine(exeName);
 
             try
             {
-                using HttpResponseMessage response = await client.GetAsync(uri);
-                response.EnsureSuccessStatusCode();
-                using FileStream fileStream = new(zipLocation, FileMode.Create, FileAccess.Write, FileShare.None);
-                await response.Content.CopyToAsync(fileStream);
+                var bytes = await client.GetByteArrayAsync(uri);
+                File.WriteAllBytes(zipLocation, bytes);
+                Logger.WriteLine($"Downloaded {bytes.Length}b: {zipLocation} (exists={File.Exists(zipLocation)}, size={new FileInfo(zipLocation).Length})");
             }
             catch (Exception ex)
             {
@@ -170,13 +179,13 @@ namespace GHelper.AutoUpdate
                 return;
             }
 
-            string command = $"$ErrorActionPreference = \"Stop\"; Set-Location -Path '{EscapeString(Path.GetDirectoryName(exeLocation))}'; Wait-Process -Name \"GHelper\"; Expand-Archive \"{zipName}\" -DestinationPath . -Force; Remove-Item \"{zipName}\" -Force; \".\\{exeName}\"; ";
+            string command = $"$ErrorActionPreference = \"Stop\"; Set-Location -Path '{EscapeString(exeDir)}'; Wait-Process -Name \"GHelper\"; Expand-Archive \"{zipName}\" -DestinationPath . -Force; Remove-Item \"{zipName}\" -Force; \".\\{exeName}\"; ";
             Logger.WriteLine(command);
 
             try
             {
-                Process cmd = new();
-                cmd.StartInfo.WorkingDirectory = Path.GetDirectoryName(exeLocation);
+                var cmd = new Process();
+                cmd.StartInfo.WorkingDirectory = exeDir;
                 cmd.StartInfo.UseShellExecute = false;
                 cmd.StartInfo.CreateNoWindow = true;
                 cmd.StartInfo.FileName = "powershell";
@@ -190,6 +199,8 @@ namespace GHelper.AutoUpdate
             }
 
             Application.Exit();
+
         }
+
     }
 }
