@@ -333,12 +333,13 @@ namespace GHelper
             buttonMatrix.FlatAppearance.MouseDownBackColor = Color.FromArgb(208, 208, 208);
             buttonMatrix.FlatAppearance.MouseOverBackColor = Color.FromArgb(217, 217, 217);
             buttonMatrix.FlatStyle = FlatStyle.Flat;
-            buttonMatrix.Location = new Point(395, 3);
-            buttonMatrix.MaximumSize = new Size(0, 36);
-            buttonMatrix.MinimumSize = new Size(0, 33);
+            buttonMatrix.Location = new Point(527, 4);
+            buttonMatrix.Margin = new Padding(4);
+            buttonMatrix.MaximumSize = new Size(0, 48);
+            buttonMatrix.MinimumSize = new Size(0, 48);
             buttonMatrix.Name = "buttonMatrix";
             buttonMatrix.Secondary = true;
-            buttonMatrix.Size = new Size(191, 35);
+            buttonMatrix.Size = new Size(253, 48);
             buttonMatrix.TabIndex = 18;
             buttonMatrix.Text = Properties.Strings.PictureGif;
             buttonMatrix.UseVisualStyleBackColor = false;
@@ -858,7 +859,7 @@ namespace GHelper
             buttonOverlay.Secondary = false;
             buttonOverlay.Size = new Size(191, 54);
             buttonOverlay.TabIndex = 12;
-            buttonOverlay.Text = "AMD Overlay";
+            buttonOverlay.Text = "Overlay";
             buttonOverlay.TextImageRelation = TextImageRelation.ImageBeforeText;
             buttonOverlay.UseVisualStyleBackColor = false;
             // 
