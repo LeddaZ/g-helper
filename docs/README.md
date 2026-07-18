@@ -16,6 +16,7 @@ Small and lightweight Armoury Crate alternative for Asus laptops offering almost
 - Hidden Fn+C and Fn+V bindings for FX507/707
 - Added option in Extra settings to change animation direction
 - Added support for specifiying the monitor to use for Ambient mode (in config.json)
+- Added support for specifying which font to use for the OSD (in config.json)
 
 <a href="https://github.com/LeddaZ/g-helper/releases/latest/download/GHelper.exe"><img width="250" alt="Download" src="https://g-helper.com/button/download.svg?lang=en" /></a> &nbsp; <a href="https://g-helper.com/support"><img width="250" alt="Donate" src="https://g-helper.com/button/donate.svg?lang=en" /></a>
 
