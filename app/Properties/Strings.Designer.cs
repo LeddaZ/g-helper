@@ -511,6 +511,15 @@ namespace GHelper.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Backlight Down.
+        /// </summary>
+        internal static string BacklightDown {
+            get {
+                return ResourceManager.GetString("BacklightDown", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to Low.
         /// </summary>
         internal static string BacklightLow {
@@ -546,6 +555,15 @@ namespace GHelper.Properties {
             }
         }
         
+        /// <summary>
+        ///   Looks up a localized string similar to Backlight Up.
+        /// </summary>
+        internal static string BacklightUp {
+            get {
+                return ResourceManager.GetString("BacklightUp", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to Backlight timeout plugged / on battery.
         /// </summary>
