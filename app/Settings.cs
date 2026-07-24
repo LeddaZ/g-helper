@@ -1229,7 +1229,7 @@ namespace GHelper
         public void InitAura()
         {
             comboKeyboard.DropDownStyle = ComboBoxStyle.DropDownList;
-            if (!Aura.IsBacklightDetected && !AppConfig.Is("skip_aura"))
+            if (!Aura.IsBacklightDetected)
                 Aura.Init();
 
             Aura.Mode = (AuraMode)AppConfig.Get("aura_mode");
@@ -1522,6 +1522,7 @@ namespace GHelper
 
         private void ButtonQuit_Click(object? sender, EventArgs e)
         {
+            AsusLampArray.Release();
             matrixControl.Dispose();
             Close();
             Program.trayIcon.Visible = false;
