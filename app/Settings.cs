@@ -1526,6 +1526,7 @@ namespace GHelper
             matrixControl.Dispose();
             Close();
             Program.trayIcon.Visible = false;
+            Logger.WriteLine("Quitting...");
             Application.Exit();
         }
 
