@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Drawing.Drawing2D;
+using System.Drawing.Text;
 
 namespace GHelper.Helpers
 {
@@ -82,6 +83,7 @@ namespace GHelper.Helpers
         protected override void PerformPaint(PaintEventArgs e)
         {
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+            e.Graphics.TextRenderingHint = TextRenderingHint.AntiAlias;
             e.Graphics.FillRoundedRectangle(_toastBrush, Bound, 10);
 
             using Bitmap? icon = toastIcon switch
