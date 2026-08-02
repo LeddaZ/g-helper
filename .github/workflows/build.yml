@@ -56,7 +56,7 @@ jobs:
 
       - name: Create ZIP from EXE
         if: steps.check_commits.outputs.has_new_commits == 'true'
-        run: powershell Compress-Archive ./app/bin/x64/Release/net10.0-windows/win-x64/publish/GHelper.exe ./app/bin/x64/Release/net10.0-windows/win-x64/publish/GHelper.zip
+        run: powershell Compress-Archive ./app/bin/x64/Release/net10.0-windows10.0.19041.0/win-x64/publish/GHelper.exe ./app/bin/x64/Release/net10.0-windows10.0.19041.0/win-x64/publish/GHelper.zip
 
       - name: Generate release tag
         if: steps.check_commits.outputs.has_new_commits == 'true'
@@ -91,8 +91,8 @@ jobs:
           body: |
             ${{ steps.read_changelog.outputs.changelog }}
           files: |
-            app/bin/x64/Release/net10.0-windows/win-x64/publish/GHelper.zip
-            app/bin/x64/Release/net10.0-windows/win-x64/publish/GHelper.exe
+            app/bin/x64/Release/net10.0-windows10.0.19041.0/win-x64/publish/GHelper.zip
+            app/bin/x64/Release/net10.0-windows10.0.19041.0/win-x64/publish/GHelper.exe
           draft: false
           prerelease: false
         env:
