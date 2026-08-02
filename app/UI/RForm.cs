@@ -1,4 +1,5 @@
-﻿using Microsoft.Win32;
+﻿using GHelper.Helpers;
+using Microsoft.Win32;
 using System.Runtime.InteropServices;
 
 namespace GHelper.UI
@@ -7,7 +8,8 @@ namespace GHelper.UI
     {
 
         public static Color colorEco = Color.FromArgb(255, 6, 180, 138);
-        public static Color colorStandard = Color.FromArgb(255, 58, 174, 239);
+        public static readonly Color colorBlue = AccentColor.Default;
+        public static Color colorStandard = colorBlue;
         public static Color colorTurbo = Color.FromArgb(255, 255, 32, 32);
         public static Color colorCustom = Color.FromArgb(255, 255, 128, 0);
         public static Color colorGray = Color.FromArgb(255, 168, 168, 168);
@@ -39,6 +41,7 @@ namespace GHelper.UI
 
         public bool darkTheme = false;
         private bool themeInitialized = false;
+        private Color formAccent = Color.Empty;
         protected override CreateParams CreateParams
         {
             get
@@ -52,6 +55,7 @@ namespace GHelper.UI
         public static void InitColors(bool darkTheme)
         {
             flatTheme = AppConfig.GetString("theme")?.ToLower() == "flat";
+            colorStandard = AccentColor.Get(darkTheme);
 
             if (darkTheme)
             {
@@ -117,15 +121,21 @@ namespace GHelper.UI
 
             InitColors(darkTheme);
 
+            // Accent colors are baked into the controls when a form is built, so each form
+            // tracks the one it was painted with and repaints when the user picks a new one.
+            Color oldAccent = formAccent;
+            bool accentChanged = !firstInit && oldAccent != colorStandard;
+            formAccent = colorStandard;
+
             if (setDPI)
                 ControlHelper.Resize(this);
 
-            if (changed || firstInit)
+            if (changed || firstInit || accentChanged)
             {
                 DwmSetWindowAttribute(Handle, 20, new[] { darkTheme ? 1 : 0 }, 4);
-                SetPreferredAppMode(darkTheme ? 1 : 0); 
+                SetPreferredAppMode(darkTheme ? 1 : 0);
                 SetWindowTheme(Handle, darkTheme ? "DarkMode_Explorer" : "Explorer", null);
-                ControlHelper.Adjust(this, changed);
+                ControlHelper.Adjust(this, changed, accentChanged ? oldAccent : null);
                 this.Invalidate();
             }
 

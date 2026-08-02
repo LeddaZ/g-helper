@@ -766,7 +766,7 @@ namespace GHelper
             else
             {
                 buttonServices.Text = Properties.Strings.Start;
-                labelServices.ForeColor = colorStandard;
+                labelServices.ForeColor = colorBlue;
             }
 
             labelServices.Text = Properties.Strings.AsusServicesRunning + ":  " + servicesCount;
