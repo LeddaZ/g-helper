@@ -39,7 +39,7 @@ namespace GHelper.UI
         private readonly System.Windows.Forms.Timer _animTimer = new() { Interval = 30 };
 
 
-        public Color accentColor = Color.FromArgb(255, 58, 174, 239);
+        public Color accentColor = RForm.colorStandard;
         public Color borderColor = Color.White;
 
         public List<int> supportedValues = new();

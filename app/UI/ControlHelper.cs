@@ -1,4 +1,5 @@
-﻿using GHelper.UI;
+﻿using GHelper.Helpers;
+using GHelper.UI;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
@@ -12,21 +13,24 @@ public static class ControlHelper
 
     static bool _invert = false;
     static bool _darkMode = false;
+    static Color? _oldAccent = null;
     static float _scale = 1;
 
     public static float Scale => _scale;
     public static bool DarkMode => _darkMode;
 
-    public static void Adjust(RForm container, bool invert = false)
+    public static void Adjust(RForm container, bool invert = false, Color? oldAccent = null)
     {
 
         container.BackColor = RForm.formBack;
         container.ForeColor = RForm.foreMain;
 
         _invert = invert;
+        _oldAccent = oldAccent;
         _darkMode = container.darkTheme;
         AdjustControls(container.Controls);
         _invert = false;
+        _oldAccent = null;
 
     }
 
@@ -75,6 +79,11 @@ public static class ControlHelper
 
                 if (button.Image is not null && _invert)
                     button.Image = AdjustImage(button.Image);
+
+                // Accent borders are assigned once when a form is built, so on a live
+                // accent change they have to be swapped on the buttons still carrying the old one.
+                if (_oldAccent is Color previous && button.BorderColor == previous)
+                    button.BorderColor = RForm.colorStandard;
             }
 
             var pictureBox = control as PictureBox;
@@ -124,6 +133,7 @@ public static class ControlHelper
             if (sl != null)
             {
                 sl.borderColor = RForm.buttonMain;
+                sl.accentColor = RForm.colorStandard;
             }
 
             var chk = control as CheckBox;
@@ -136,6 +146,13 @@ public static class ControlHelper
                         chk.FlatAppearance.BorderColor = RForm.borderSecond;
                 }
                 SetWindowTheme(chk.Handle, _darkMode ? "DarkMode_Explorer" : "Explorer", null);
+
+                if (chk.Appearance == Appearance.Normal)
+                {
+                    chk.Paint -= PaintCheckIndicator;
+                    chk.Paint += PaintCheckIndicator;
+                    chk.Invalidate();
+                }
             }
 
             var chart = control as Chart;
@@ -163,6 +180,93 @@ public static class ControlHelper
             }
 
         }
+    }
+
+    // The themed WinForms glyph ignores the accent color, so the indicator is redrawn
+    // on top of it. Erasing a slightly larger area first means our box doesn't have to
+    // line up with the theme's pixel for pixel.
+    private const int CheckGlyphSize = 13;
+
+    private static void PaintCheckIndicator(object? sender, PaintEventArgs e)
+    {
+        if (sender is not CheckBox chk) return;
+
+        var g = e.Graphics;
+        float scale = g.DpiX / 96f;
+        int size = (int)Math.Round(CheckGlyphSize * scale);
+        Rectangle glyph = GlyphBounds(chk, size);
+
+        using (var back = new SolidBrush(chk.BackColor))
+            g.FillRectangle(back, Rectangle.Inflate(glyph, 2, 2));
+
+        SmoothingMode prev = g.SmoothingMode;
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+
+        int radius = Math.Max(2, (int)Math.Round(3 * scale));
+        var box = new Rectangle(glyph.X, glyph.Y, glyph.Width - 1, glyph.Height - 1);
+        Color fillColor = chk.Enabled ? RForm.colorStandard : RForm.colorGray;
+
+        using (GraphicsPath path = RComboBox.RoundedRect(box, radius, radius))
+        {
+            if (chk.CheckState == CheckState.Unchecked)
+            {
+                // Half-transparent foreground reads as a mid grey against either theme.
+                using var pen = new Pen(Color.FromArgb(chk.Enabled ? 140 : 70, RForm.foreMain), scale);
+                g.DrawPath(pen, path);
+            }
+            else
+            {
+                using var fill = new SolidBrush(fillColor);
+                g.FillPath(fill, path);
+            }
+        }
+
+        if (chk.CheckState != CheckState.Unchecked)
+        {
+            using var tick = new Pen(AccentColor.Contrasting(fillColor), Math.Max(1.4f, 1.5f * scale))
+            {
+                StartCap = LineCap.Round,
+                EndCap = LineCap.Round,
+                LineJoin = LineJoin.Round
+            };
+            g.DrawLines(tick, new[]
+            {
+                new PointF(box.X + box.Width * 0.24f, box.Y + box.Height * 0.52f),
+                new PointF(box.X + box.Width * 0.43f, box.Y + box.Height * 0.72f),
+                new PointF(box.X + box.Width * 0.76f, box.Y + box.Height * 0.30f)
+            });
+        }
+
+        g.SmoothingMode = prev;
+    }
+
+    private static Rectangle GlyphBounds(CheckBox chk, int size)
+    {
+        const ContentAlignment right = ContentAlignment.TopRight | ContentAlignment.MiddleRight | ContentAlignment.BottomRight;
+        const ContentAlignment center = ContentAlignment.TopCenter | ContentAlignment.MiddleCenter | ContentAlignment.BottomCenter;
+        const ContentAlignment top = ContentAlignment.TopLeft | ContentAlignment.TopCenter | ContentAlignment.TopRight;
+        const ContentAlignment bottom = ContentAlignment.BottomLeft | ContentAlignment.BottomCenter | ContentAlignment.BottomRight;
+
+        // WinForms lays the glyph out inside the padded area, not the raw client rect.
+        Rectangle client = chk.ClientRectangle;
+        Padding pad = chk.Padding;
+        Rectangle content = Rectangle.FromLTRB(
+            client.Left + pad.Left,
+            client.Top + pad.Top,
+            Math.Max(client.Left + pad.Left + size, client.Right - pad.Right),
+            Math.Max(client.Top + pad.Top + size, client.Bottom - pad.Bottom));
+
+        ContentAlignment align = chk.CheckAlign;
+
+        int x = (align & right) != 0 ? content.Right - size
+              : (align & center) != 0 ? content.X + (content.Width - size) / 2
+              : content.X;
+
+        int y = (align & bottom) != 0 ? content.Bottom - size
+              : (align & top) != 0 ? content.Y
+              : content.Y + (content.Height - size) / 2;
+
+        return new Rectangle(x, y, size, size);
     }
 
     public static Lazy<float> GetDpiScale(Control control)
