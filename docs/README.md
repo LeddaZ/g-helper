@@ -13,10 +13,11 @@ Small and lightweight Armoury Crate alternative for Asus laptops offering almost
 <a href="https://github.com/LeddaZ/g-helper/releases/latest/download/GHelper.exe" alt="G-Helper - Lightweight control tool for Asus laptops"><img width="1280" alt="G-Helper - Lightweight control tool for Asus laptops" src="https://raw.githubusercontent.com/LeddaZ/g-helper/refs/heads/main/docs/app-hero.jpg" /></a>
 
 ## Changes in this fork
-- Hidden Fn+C and Fn+V bindings for FX507/707
-- Added option in Extra settings to change animation direction
-- Added support for specifiying the monitor to use for Ambient mode (in config.json)
-- Added support for specifying which font to use for the OSD (in config.json)
+- Hidden Fn+C and Fn+V bindings for FX507/707 ([source](https://github.com/LeddaZ/g-helper/commit/565f4b98b414783b8ebccc59c2d467341907aa8a))
+- Added option in Extra settings to change animation direction ([source](https://github.com/LeddaZ/g-helper/tree/rainbow-direction))
+- Added support for specifiying the monitor to use for Ambient mode (in config.json) ([source](https://github.com/LeddaZ/g-helper/tree/multi-screen-ambient))
+- Added support for specifying which font to use for the overlay (in config.json) ([source](https://github.com/LeddaZ/g-helper/commit/780557676922a66cbed0815f812e8dab304b56f3))
+- Enabled anti-aliasing for the OSD ([source](https://github.com/LeddaZ/g-helper/commit/cac161b0026baba7369ec3111e35bacf12663bf0))
 
 <a href="https://github.com/LeddaZ/g-helper/releases/latest/download/GHelper.exe"><img width="250" alt="Download" src="https://g-helper.com/button/download.svg?lang=en" /></a> &nbsp; <a href="https://g-helper.com/support"><img width="250" alt="Donate" src="https://g-helper.com/button/donate.svg?lang=en" /></a>
 
