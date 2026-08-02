@@ -1742,6 +1742,7 @@ namespace GHelper
                     {
                         AsusACPI.PerformanceSilent => colorEco,
                         AsusACPI.PerformanceTurbo => colorTurbo,
+                        AsusACPI.PerformanceFullSpeed => Color.Orange,
                         _ => colorStandard,
                     };
                     break;

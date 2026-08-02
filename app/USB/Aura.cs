@@ -1238,6 +1238,7 @@ namespace GHelper.USB
             public static void ApplyAmbient(bool init = false)
             {
                 if (!backlight || sessionLock) return;
+                if (AmbientData.IsMoveSize()) return;
 
                 MonitorHelper.MonitorDetails monitor = MonitorHelper.GetMonitor(ambientDisplayNumber);
 
@@ -1299,6 +1300,15 @@ namespace GHelper.USB
 
             static class AmbientData
             {
+                [DllImport("user32.dll")]
+                private static extern bool GetGUIThreadInfo(uint idThread, int[] gui);
+
+                public static bool IsMoveSize()
+                {
+                    int[] gui = new int[18];
+                    gui[0] = 72;
+                    return GetGUIThreadInfo(0, gui) && (gui[1] & 0x2) != 0; 
+                }
 
                 public enum StretchMode
                 {
