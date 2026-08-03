@@ -41,6 +41,7 @@ namespace GHelper.UI
         private readonly List<Color> customColors = new();
         private Swatch[] customSwatches;
         private bool suppressHex;
+        private int lastCommitted;
 
         private int S(int v) => (int)Math.Round(v * scale);
 
@@ -48,6 +49,7 @@ namespace GHelper.UI
         {
             Color = initial;
             originalColor = initial;
+            lastCommitted = ColorToColorRef(initial);
             this.allowRandom = allowRandom;
             (hue, sat, val) = RgbToHsv(initial);
 
@@ -71,7 +73,7 @@ namespace GHelper.UI
 
             FormClosing += (s, e) =>
             {
-                if (DialogResult != DialogResult.OK && ColorToColorRef(Color) != ColorToColorRef(originalColor)) ColorChanged?.Invoke(originalColor);
+                if (DialogResult != DialogResult.OK && lastCommitted != ColorToColorRef(originalColor)) ColorChanged?.Invoke(originalColor);
             };
         }
 
@@ -197,8 +199,13 @@ namespace GHelper.UI
         }
 
         // Persist an in-place custom-slot edit on mouse-up (not per drag-step) alongside the device apply.
+        // Returns when the color hasn't changed since the last commit, so redundant triggers (re-clicking
+        // the active swatch, or hexBox.Leave firing as focus moves to OK) don't re-send and flicker the device.
         private void Commit()
         {
+            if (ColorToColorRef(Color) == lastCommitted) return;
+            lastCommitted = ColorToColorRef(Color);
+
             if (ActiveCustomIndex >= 0) AppConfig.Set(CustomKey, string.Join("-", customColors.Select(ColorToColorRef)));
             ColorChanged?.Invoke(Color);
         }
