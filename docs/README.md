@@ -18,6 +18,8 @@ Small and lightweight Armoury Crate alternative for Asus laptops offering almost
 - Added support for specifiying the monitor to use for Ambient mode (in config.json) ([source](https://github.com/LeddaZ/g-helper/tree/multi-screen-ambient))
 - Added support for specifying which font to use for the overlay (in config.json) ([source](https://github.com/LeddaZ/g-helper/commit/780557676922a66cbed0815f812e8dab304b56f3))
 - Enabled anti-aliasing for the OSD ([source](https://github.com/LeddaZ/g-helper/commit/cac161b0026baba7369ec3111e35bacf12663bf0))
+- Theme app based on Windows accent colour ([source](https://github.com/LeddaZ/g-helper/tree/accent-color))
+- Don't re-apply the Aura colour when clicking OK on the colour picker, or when clicking on the same colour again ([source](https://github.com/LeddaZ/g-helper/commit/a545d256807cef32602924a24e8a80d314c15fe4))
 
 <a href="https://github.com/LeddaZ/g-helper/releases/latest/download/GHelper.exe"><img width="250" alt="Download" src="https://g-helper.com/button/download.svg?lang=en" /></a> &nbsp; <a href="https://g-helper.com/support"><img width="250" alt="Donate" src="https://g-helper.com/button/donate.svg?lang=en" /></a>
 
