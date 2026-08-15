@@ -316,7 +316,7 @@ namespace GHelper.Ally
             if (timer is null)
             {
                 timer = new System.Timers.Timer(300);
-                timer.Elapsed += Timer_Elapsed;
+                timer.Elapsed += TimerHelper.Guarded("Ally", Timer_Elapsed);
                 Logger.WriteLine("Ally timer");
             }
         }

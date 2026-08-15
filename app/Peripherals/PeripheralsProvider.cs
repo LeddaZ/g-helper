@@ -1,8 +1,8 @@
-﻿using GHelper.Peripherals.Mouse;
+﻿using GHelper.Helpers;
+using GHelper.Peripherals.Mouse;
 using GHelper.Peripherals.Mouse.Models;
 using GHelper.USB;
 using HidSharp;
-using System.Runtime.CompilerServices;
 
 namespace GHelper.Peripherals
 {
@@ -26,7 +26,7 @@ namespace GHelper.Peripherals
 
         static PeripheralsProvider()
         {
-            timer.Elapsed += DeviceTimer_Elapsed;
+            timer.Elapsed += TimerHelper.Guarded("HID Device", DeviceTimer_Elapsed);
         }
 
 
@@ -252,14 +252,32 @@ namespace GHelper.Peripherals
 
         private static void UpdateSettingsView()
         {
-            Program.settingsForm.Invoke(delegate
+            var form = Program.settingsForm;
+            if (form is null || form.IsDisposed || !form.IsHandleCreated) return;
+
+            try
             {
-                Program.settingsForm.VisualizePeripherals();
-            });
+                // Fire and forget on purpose. Callers run on HID and device threads while holding
+                // the detection lock, and a blocking Invoke from there deadlocks the UI thread.
+                form.BeginInvoke((Action)form.VisualizePeripherals);
+            }
+            catch (Exception ex)
+            {
+                Logger.WriteLine("Can't refresh peripherals view: " + ex.Message);
+            }
         }
 
-        [MethodImpl(MethodImplOptions.Synchronized)]
+        // Was [MethodImpl(MethodImplOptions.Synchronized)], which takes a lock on the public Type
+        // object that any other code can also take. Detection marshals to the UI thread, so the
+        // lock has to be private and unreachable from outside.
+        private static readonly object _DETECT_LOCK = new object();
+
         public static void DetectAllAsusMice()
+        {
+            lock (_DETECT_LOCK) DetectAllAsusMiceInner();
+        }
+
+        private static void DetectAllAsusMiceInner()
         {
             //Add one line for every supported mouse class here to support them.
             DedectOmniMouse();

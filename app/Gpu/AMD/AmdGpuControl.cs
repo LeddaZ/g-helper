@@ -397,6 +397,10 @@ public class AmdGpuControl : IGpuControl
 
             List<string> immune = new() { "svchost", "system", "ntoskrnl", "csrss", "winlogon", "wininit", "smss" };
 
+            // We render on the GPU too, so we show up in the switchable graphics list ourselves.
+            // The NVidia path guards by PID, this one kills by name and would take out G-Helper.
+            immune.Add(Path.GetFileNameWithoutExtension(Application.ExecutablePath).ToLower());
+
             foreach (string kill in appNames)
                 if (!immune.Contains(kill.ToLower()))
                     ProcessHelper.KillByName(kill);

@@ -234,7 +234,7 @@ namespace GHelper.Overlay
         public HardwareOverlay()
         {
             Alpha = 255;
-            _timer.Elapsed += (_, _) => Tick();
+            _timer.Elapsed += TimerHelper.Guarded("Overlay", (_, _) => Tick());
         }
 
         private const int WM_NCDESTROY = 0x0082;

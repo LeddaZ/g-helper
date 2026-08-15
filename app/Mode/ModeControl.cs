@@ -55,7 +55,7 @@ namespace GHelper.Mode
             if (reapplyTime > 0)
             {
                 reapplyTimer = new System.Timers.Timer(reapplyTime * 1000);
-                reapplyTimer.Elapsed += ReapplyTimer_Elapsed;
+                reapplyTimer.Elapsed += TimerHelper.Guarded("Reapply", ReapplyTimer_Elapsed);
             }
         }
 
@@ -219,7 +219,7 @@ namespace GHelper.Mode
             if (modeToggleTimer is null)
             {
                 modeToggleTimer = new System.Timers.Timer(delay);
-                modeToggleTimer.Elapsed += ModeToggleTimer_Elapsed;
+                modeToggleTimer.Elapsed += TimerHelper.Guarded("ModeToggle", ModeToggleTimer_Elapsed);
             }
 
             modeToggleTimer.Stop();

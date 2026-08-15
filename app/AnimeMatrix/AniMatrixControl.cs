@@ -67,7 +67,7 @@ namespace GHelper.AnimeMatrix
                 }
 
                 matrixTimer = new System.Timers.Timer(100);
-                matrixTimer.Elapsed += MatrixTimer_Elapsed;
+                matrixTimer.Elapsed += TimerHelper.Guarded("Matrix", MatrixTimer_Elapsed);
 
             }
             catch (Exception ex)
@@ -341,7 +341,7 @@ namespace GHelper.AnimeMatrix
             if (slashTimer == default(System.Timers.Timer))
             {
                 slashTimer = new System.Timers.Timer(interval);
-                slashTimer.Elapsed += SlashTimer_elapsed;
+                slashTimer.Elapsed += TimerHelper.Guarded("Slash", SlashTimer_elapsed);
                 slashTimer.AutoReset = true;
             }
             // only write if interval changed

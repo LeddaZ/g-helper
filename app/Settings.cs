@@ -244,7 +244,7 @@ namespace GHelper
             if (AppConfig.IsChargeLimit6080()) sliderBattery.supportedValues = new() { 60, 65, 70, 75, 80, 100 };
 
             sensorTimer = new System.Timers.Timer(AppConfig.Get("sensor_timer", 1000));
-            sensorTimer.Elapsed += OnTimedEvent;
+            sensorTimer.Elapsed += TimerHelper.Guarded("Sensor", OnTimedEvent);
             sensorTimer.Enabled = sensorsAlways;
 
             labelCharge.MouseEnter += PanelBattery_MouseEnter;

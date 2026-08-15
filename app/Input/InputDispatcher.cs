@@ -58,7 +58,7 @@ namespace GHelper.Input
             MKeyControl.ApplyAll();
             RegisterKeys();
 
-            timer.Elapsed += Timer_Elapsed;
+            timer.Elapsed += TimerHelper.Guarded("Input", Timer_Elapsed);
 
         }
 

@@ -139,7 +139,7 @@ namespace GHelper.USB
 
         static Aura()
         {
-            timer.Elapsed += Timer_Elapsed;
+            timer.Elapsed += TimerHelper.Guarded("Aura", Timer_Elapsed);
         }
 
         public static Dictionary<AuraSpeed, string> GetSpeeds()

@@ -63,7 +63,7 @@ namespace GHelper.Display
 
         static VisualControl()
         {
-            brightnessTimer.Elapsed += BrightnessTimerTimer_Elapsed;
+            brightnessTimer.Elapsed += TimerHelper.Guarded("Brightness", BrightnessTimerTimer_Elapsed);
         }
 
         public static string GetGameVisualPath()

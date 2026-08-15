@@ -162,7 +162,7 @@ namespace GHelper
 
             SetAutoModes(init: true);
 
-            powerSettleTimer.Elapsed += OnPowerSettled;
+            powerSettleTimer.Elapsed += TimerHelper.Guarded("Power", OnPowerSettled);
 
             // Subscribing for system power change events
             SystemEvents.PowerModeChanged += SystemEvents_PowerModeChanged;
@@ -232,12 +232,21 @@ namespace GHelper
             if (AppConfig.IsOverlay())
                 hardwareOverlay?.StartOverlay();
 
+            // Every orderly shutdown leaves a trace. If the app disappears without any of these
+            // lines it was terminated from the outside, which narrows down the search a lot.
+            Application.ApplicationExit += OnExit;
+            AppDomain.CurrentDomain.ProcessExit += (_, _) => Logger.WriteLine("ProcessExit");
+
             Application.Run();
+
+            Logger.WriteLine("Message loop ended");
         }
 
 
         private static void SystemEvents_SessionEnding(object sender, SessionEndingEventArgs e)
         {
+            // Without this a normal shutdown looks exactly like a silent death in the log
+            Logger.WriteLine("Session Ending: " + e.Reason.ToString());
             gpuControl.StandardModeFix();
             modeControl.ShutdownReset();
             BatteryControl.AutoBattery();
@@ -480,21 +489,29 @@ namespace GHelper
             settingsForm.RefreshSensors();
         }
 
-        static void OnExit(object sender, EventArgs e)
+        static void OnExit(object? sender, EventArgs e)
         {
-            if (trayIcon is not null)
-            {
-                trayIcon.Visible = false;
-                trayIcon.Dispose();
-            }
+            Logger.WriteLine("ApplicationExit");
 
-            PeripheralsProvider.UnregisterForDeviceEvents();
-            clamshellControl.UnregisterDisplayEvents();
-            NativeMethods.UnregisterPowerSettingNotification(unRegPowerNotify);
-            NativeMethods.UnregisterPowerSettingNotification(unRegPowerNotifyLid);
-            NativeMethods.UnregisterPowerSettingNotification(unRegPowerNotifyEnergy);
-            NativeMethods.UnregisterSuspendResumeNotification(unRegSuspendResume);
-            Application.Exit();
+            try
+            {
+                if (trayIcon is not null)
+                {
+                    trayIcon.Visible = false;
+                    trayIcon.Dispose();
+                }
+
+                PeripheralsProvider.UnregisterForDeviceEvents();
+                clamshellControl?.UnregisterDisplayEvents();
+                NativeMethods.UnregisterPowerSettingNotification(unRegPowerNotify);
+                NativeMethods.UnregisterPowerSettingNotification(unRegPowerNotifyLid);
+                NativeMethods.UnregisterPowerSettingNotification(unRegPowerNotifyEnergy);
+                NativeMethods.UnregisterSuspendResumeNotification(unRegSuspendResume);
+            }
+            catch (Exception ex)
+            {
+                Logger.WriteLine("Cleanup on exit failed: " + ex.Message);
+            }
         }
 
         static void BatteryLimit()

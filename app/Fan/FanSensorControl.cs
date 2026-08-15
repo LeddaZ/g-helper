@@ -1,4 +1,5 @@
-﻿using GHelper.Mode;
+﻿using GHelper.Helpers;
+using GHelper.Mode;
 
 namespace GHelper.Fan
 {
@@ -31,7 +32,7 @@ namespace GHelper.Fan
             bool calibrating = timer is not null && timer.Enabled;
             timer?.Dispose();
             timer = new System.Timers.Timer(1000);
-            timer.Elapsed += Timer_Elapsed;
+            timer.Elapsed += TimerHelper.Guarded("FanSensor", Timer_Elapsed);
             timer.Enabled = calibrating;
         }
 

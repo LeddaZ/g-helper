@@ -20,6 +20,7 @@ public static class AsusHid
     static int auraFeatLen;
     static byte[]? auraScratch;
 
+    // Callers must hold hidLock: these mutate the shared stream and scratch buffer
     static void EnsureAuraStream()
     {
         if (auraStream != null) return;
@@ -186,29 +187,39 @@ public static class AsusHid
 
     public static void SetFeatureAura(byte[] data, bool retry = true)
     {
-        EnsureAuraStream();
-        if (auraStream == null)
+        // The whole open / write / dispose cycle has to be inside the lock. Opening and disposing
+        // outside it let one thread dispose the stream another was writing to, double open the
+        // device, and race on the shared scratch buffer.
+        lock (hidLock)
         {
-            Logger.WriteLine("Aura stream not found");
-            return;
-        }
-
-        try
-        {
-            byte[] payload = data;
-            if (auraScratch != null && data.Length < auraFeatLen)
+            for (int attempt = 0; ; attempt++)
             {
-                Array.Clear(auraScratch, 0, auraFeatLen);
-                Array.Copy(data, auraScratch, data.Length);
-                payload = auraScratch;
+                EnsureAuraStream();
+                if (auraStream == null)
+                {
+                    Logger.WriteLine("Aura stream not found");
+                    return;
+                }
+
+                try
+                {
+                    byte[] payload = data;
+                    if (auraScratch != null && data.Length < auraFeatLen)
+                    {
+                        Array.Clear(auraScratch, 0, auraFeatLen);
+                        Array.Copy(data, auraScratch, data.Length);
+                        payload = auraScratch;
+                    }
+                    auraStream.SetFeature(payload);
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    Logger.WriteLine($"Error setting feature on HID device: {ex.Message} {BitConverter.ToString(data, 0, Math.Min(16, data.Length))}");
+                    DisposeAuraStream();
+                    if (!retry || attempt > 0) return;
+                }
             }
-            lock (hidLock) auraStream.SetFeature(payload);
-        }
-        catch (Exception ex)
-        {
-            Logger.WriteLine($"Error setting feature on HID device: {ex.Message} {BitConverter.ToString(data, 0, Math.Min(16, data.Length))}");
-            DisposeAuraStream();
-            if (retry) SetFeatureAura(data, false);
         }
     }
 

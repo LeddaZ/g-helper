@@ -101,8 +101,11 @@
     </EmbeddedResource>
   </ItemGroup>
 
-	<Target Name="KillRunningGHelper" BeforeTargets="Build" Condition="'$(GITHUB_ACTIONS)'!='true'">
-		<Exec Command="powershell -NoProfile -Command &quot;try { [System.Threading.EventWaitHandle]::OpenExisting('Global\GHelperApp-Exit').Set() } catch {}; for ($i = 0; $i -lt 50; $i++) { if (-not (Get-Process -Name GHelper -ErrorAction SilentlyContinue)) { break }; Start-Sleep -Milliseconds 100 }&quot;" />
+	<!-- Must hook PrepareForBuild, not Build: BeforeTargets="Build" runs after CoreBuild has
+	     already tried to copy the apphost over the running exe, so the kill came too late and
+	     the build failed with MSB3027 on every rebuild that had something to copy. -->
+	<Target Name="KillRunningGHelper" BeforeTargets="PrepareForBuild" Condition="'$(GITHUB_ACTIONS)'!='true'">
+		<Exec Command="powershell -NoProfile -Command &quot;try { [System.Threading.EventWaitHandle]::OpenExisting('Local\GHelperApp-Exit').Set() } catch {}; for ($i = 0; $i -lt 50; $i++) { if (-not (Get-Process -Name GHelper -ErrorAction SilentlyContinue)) { break }; Start-Sleep -Milliseconds 100 }&quot;" />
 	</Target>
 
 	<Target Name="ZipSingleExe" AfterTargets="Publish" Condition="'$(GITHUB_ACTIONS)'!='true'">

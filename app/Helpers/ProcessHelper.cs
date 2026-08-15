@@ -6,7 +6,10 @@ namespace GHelper.Helpers
 {
     public static class ProcessHelper
     {
-        private const string ExitEventName = "Global\\GHelperApp-Exit";
+        // Session scoped on purpose. A Global\ name lets an instance in another logon session
+        // (or any other process on the machine) terminate this one.
+        private const string ExitEventName = "Local\\GHelperApp-Exit";
+        private const string StartupMutexName = "Local\\GHelperApp-Startup";
         private static EventWaitHandle? exitEvent;
         private static long lastAdmin;
 
@@ -20,29 +23,50 @@ namespace GHelper.Helpers
 
         public static void CheckAlreadyRunning()
         {
-            var sec = new EventWaitHandleSecurity();
-            sec.AddAccessRule(new EventWaitHandleAccessRule(
-                new SecurityIdentifier(WellKnownSidType.AuthenticatedUserSid, null),
-                EventWaitHandleRights.Synchronize | EventWaitHandleRights.Modify,
-                AccessControlType.Allow));
+            // Serialise the whole handover. Two instances starting at the same time used to
+            // enumerate each other and both call Kill(), leaving no instance running at all.
+            Mutex? startupMutex = null;
+            bool holdsMutex = false;
 
-            bool created = false;
             try
             {
-                exitEvent = EventWaitHandleAcl.Create(false, EventResetMode.ManualReset, ExitEventName, out created, sec);
+                startupMutex = new Mutex(false, StartupMutexName);
+                try { holdsMutex = startupMutex.WaitOne(TimeSpan.FromSeconds(10)); }
+                catch (AbandonedMutexException) { holdsMutex = true; }
             }
-            catch
+            catch (Exception ex)
             {
-                try { exitEvent = EventWaitHandle.OpenExisting(ExitEventName); }
-                catch { }
+                Logger.WriteLine("Startup mutex failed: " + ex.Message);
             }
 
-            if (!created && exitEvent != null)
+            try
+            {
+                TakeOver();
+            }
+            finally
+            {
+                if (holdsMutex)
+                {
+                    try { startupMutex?.ReleaseMutex(); } catch { }
+                }
+                startupMutex?.Dispose();
+            }
+        }
+
+        private static void TakeOver()
+        {
+            bool created = OpenExitEvent();
+            bool signalled = false;
+
+            // Ask a running instance to quit. Left signalled on purpose - the old code reset it
+            // immediately, so the incumbent could miss the pulse entirely. We reset it below,
+            // once the others are gone and before we start waiting on it ourselves.
+            if (!created && exitEvent is not null)
             {
                 try
                 {
                     exitEvent.Set();
-                    exitEvent.Reset();
+                    signalled = true;
                 }
                 catch (Exception ex)
                 {
@@ -51,54 +75,123 @@ namespace GHelper.Helpers
                 }
             }
 
+            if (!KillOtherInstances(signalled)) return;
+
+            if (exitEvent is not null)
+            {
+                try
+                {
+                    exitEvent.Reset();
+                }
+                catch (Exception ex)
+                {
+                    Logger.WriteLine("Can't reset exit event: " + ex.Message);
+                    exitEvent = null;
+                }
+            }
+
+            if (exitEvent is not null)
+                ThreadPool.RegisterWaitForSingleObject(exitEvent, (_, _) =>
+                {
+                    Logger.WriteLine("Quitting: another instance took over");
+                    Application.Exit();
+                }, null, Timeout.Infinite, true);
+        }
+
+        /// <returns>False if this instance should give up and stop starting</returns>
+        private static bool KillOtherInstances(bool signalled)
+        {
             using Process currentProcess = Process.GetCurrentProcess();
+            int currentSession = currentProcess.SessionId;
+
             Process[] processes = Process.GetProcessesByName(currentProcess.ProcessName);
             try
             {
-                if (processes.Length > 1)
+                var others = new List<Process>();
+                foreach (Process process in processes)
                 {
-                    var failed = new List<Process>();
-                    foreach (Process process in processes)
-                        if (process.Id != currentProcess.Id)
-                        {
-                            try
-                            {
-                                process.Kill();
-                            }
-                            catch (Exception ex)
-                            {
-                                Logger.WriteLine($"Can't kill PID {process.Id}: {ex.Message}");
-                                failed.Add(process);
-                            }
-                        }
+                    if (process.Id == currentProcess.Id) continue;
 
-                    if (failed.Count > 0)
+                    // An instance in another logon session is not ours to kill
+                    try { if (process.SessionId != currentSession) continue; }
+                    catch { continue; }
+
+                    others.Add(process);
+                }
+
+                if (others.Count == 0) return true;
+
+                // We just asked them to quit, give them a moment before resorting to Kill
+                if (signalled)
+                    for (int i = 0; i < 20 && others.Exists(p => !HasExited(p)); i++)
+                        Thread.Sleep(100);
+
+                var failed = new List<Process>();
+                foreach (Process process in others)
+                {
+                    if (HasExited(process)) continue;
+                    try
                     {
-                        Thread.Sleep(2000);
-
-                        foreach (var p in failed)
-                        {
-                            bool stillAlive;
-                            try { stillAlive = !p.HasExited; }
-                            catch { stillAlive = true; }
-
-                            if (stillAlive)
-                            {
-                                MessageBox.Show(Properties.Strings.AppAlreadyRunningText, Properties.Strings.AppAlreadyRunning, MessageBoxButtons.OK);
-                                Application.Exit();
-                                return;
-                            }
-                        }
+                        process.Kill();
+                        Logger.WriteLine($"Stopped previous instance PID {process.Id}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.WriteLine($"Can't kill PID {process.Id}: {ex.Message}");
+                        failed.Add(process);
                     }
                 }
+
+                if (failed.Count == 0) return true;
+
+                Thread.Sleep(2000);
+
+                foreach (var p in failed)
+                    if (!HasExited(p))
+                    {
+                        Logger.WriteLine($"Quitting: PID {p.Id} is still running and can't be stopped");
+                        MessageBox.Show(Properties.Strings.AppAlreadyRunningText, Properties.Strings.AppAlreadyRunning, MessageBoxButtons.OK);
+                        Application.Exit();
+                        return false;
+                    }
+
+                return true;
             }
             finally
             {
                 foreach (Process p in processes) p.Dispose();
             }
+        }
 
-            if (exitEvent != null)
-                ThreadPool.RegisterWaitForSingleObject(exitEvent, (_, _) => Application.Exit(), null, Timeout.Infinite, true);
+        private static bool OpenExitEvent()
+        {
+            bool created = false;
+            try
+            {
+                using WindowsIdentity identity = WindowsIdentity.GetCurrent();
+
+                var sec = new EventWaitHandleSecurity();
+                sec.AddAccessRule(new EventWaitHandleAccessRule(
+                    identity.User!,
+                    EventWaitHandleRights.Synchronize | EventWaitHandleRights.Modify,
+                    AccessControlType.Allow));
+
+                exitEvent = EventWaitHandleAcl.Create(false, EventResetMode.ManualReset, ExitEventName, out created, sec);
+            }
+            catch (Exception ex)
+            {
+                Logger.WriteLine("Can't create exit event: " + ex.Message);
+                try { exitEvent = EventWaitHandle.OpenExisting(ExitEventName); }
+                catch { exitEvent = null; }
+            }
+
+            return created;
+        }
+
+        private static bool HasExited(Process process)
+        {
+            try { return process.HasExited; }
+            catch { return false; }
         }
 
         public static bool IsUserAdministrator()
@@ -126,6 +219,7 @@ namespace GHelper.Helpers
                 try
                 {
                     Process.Start(startInfo);
+                    Logger.WriteLine($"Quitting: relaunching as admin ({(string.IsNullOrEmpty(param) ? "no args" : param)})");
                     Application.Exit();
                 }
                 catch (Exception ex)
@@ -138,11 +232,15 @@ namespace GHelper.Helpers
 
         public static void KillByName(string name)
         {
+            int currentPid = Environment.ProcessId;
             var processes = Process.GetProcessesByName(name);
             try
             {
                 foreach (var process in processes)
                 {
+                    // Callers pass names discovered at runtime (GPU app lists), never kill ourselves
+                    if (process.Id == currentPid) continue;
+
                     try
                     {
                         process.Kill();

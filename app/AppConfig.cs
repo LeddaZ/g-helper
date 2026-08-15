@@ -40,7 +40,7 @@ public static class AppConfig
 
         if (!TryLoadConfig(configFile) && !TryRecoverConfig(configFile) && !TryLoadConfig(configFile + ".bak") && !TryLoadConfig(fallbackConfigFile)) Init();
 
-        timer.Elapsed += Timer_Elapsed;
+        timer.Elapsed += TimerHelper.Guarded("Config", Timer_Elapsed);
     }
 
     private static bool TryLoadConfig(string path)

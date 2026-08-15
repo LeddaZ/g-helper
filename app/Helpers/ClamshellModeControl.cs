@@ -12,7 +12,7 @@ namespace GHelper.Helpers
         {
             //Save current setting if hibernate or shutdown to prevent reverting the user set option.
             CheckAndSaveLidAction();
-            lidSettleTimer.Elapsed += OnLidSettled;
+            lidSettleTimer.Elapsed += TimerHelper.Guarded("Lid", OnLidSettled);
         }
 
 
