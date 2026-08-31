@@ -113,7 +113,16 @@ namespace GHelper.Properties {
                 return ResourceManager.GetString("AlertDGPUTitle", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Looks up a localized string similar to Looks like external screen is connected to GPU, disable GPU anyway?.
+        /// </summary>
+        internal static string AlertExternalDisplay {
+            get {
+                return ResourceManager.GetString("AlertExternalDisplay", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to Switching off Ultimate Mode requires restart.
         /// </summary>
@@ -1051,6 +1060,15 @@ namespace GHelper.Properties {
                 return ResourceManager.GetString("ExtraSettings", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Extreme Low Motion Blur.
+        /// </summary>
+        internal static string ExtremeLowMotionBlur {
+            get {
+                return ResourceManager.GetString("ExtremeLowMotionBlur", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Factory Defaults.
@@ -1670,6 +1688,15 @@ namespace GHelper.Properties {
         internal static string MatrixDateFormat {
             get {
                 return ResourceManager.GetString("MatrixDateFormat", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Rotate 180°.
+        /// </summary>
+        internal static string MatrixFlip {
+            get {
+                return ResourceManager.GetString("MatrixFlip", resourceCulture);
             }
         }
 
