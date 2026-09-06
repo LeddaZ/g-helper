@@ -44,6 +44,7 @@ namespace GHelper
         public Extra? extraForm;
         public Updates? updatesForm;
         public Handheld? handheldForm;
+        public OverlayConfig? overlayForm;
 
         static long lastRefresh;
         static long lastBatteryRefresh;
@@ -271,6 +272,11 @@ namespace GHelper
             buttonFPS.Click += ButtonFPS_Click;
             buttonOverlay.Click += ButtonOverlay_Click;
             buttonOverlay.BorderColor = colorStandard;
+            buttonOverlay.Text = Properties.Strings.Overlay;
+            buttonOverlay.Activated = AppConfig.IsOverlay();
+
+            if (AppConfig.IsAlly()) tableScreen.ColumnCount = 3;
+            else tableScreen.Controls.Add(buttonOverlay, 3, 0);
 
             buttonAutoTDP.Click += ButtonAutoTDP_Click;
             buttonAutoTDP.BorderColor = colorTurbo;
@@ -537,7 +543,16 @@ namespace GHelper
 
         private void ButtonOverlay_Click(object? sender, EventArgs e)
         {
-            ToggleOverlay();
+            if (overlayForm == null || overlayForm.Text == "")
+            {
+                overlayForm = new OverlayConfig();
+                AddOwnedForm(overlayForm);
+            }
+
+            if (overlayForm.Visible)
+                overlayForm.Close();
+            else
+                overlayForm.Show();
         }
 
         private void ButtonHandheld_Click(object? sender, EventArgs e)
@@ -582,9 +597,6 @@ namespace GHelper
             panelAlly.Visible = true;
             panelKeyboardTitle.Visible = false;
             panelKeyboard.Padding = new Padding(panelKeyboard.Padding.Left, 0, panelKeyboard.Padding.Right, panelKeyboard.Padding.Bottom);
-
-            buttonOverlay.Text = Properties.Strings.Overlay;
-            buttonOverlay.Activated = AppConfig.IsOverlay();
 
             tableAMD.Visible = true;
         }
@@ -1504,6 +1516,9 @@ namespace GHelper
                 buttonHDRControl.Visible = false;
             }
 
+            if (!AppConfig.IsAlly())
+                buttonOverlay.Visible = miniled1 < 0 && miniled2 < 0 && fhd < 0 && hdrControl < 0;
+
             if (advancedColor) labelVisual.Text = Properties.Strings.VisualModesHDR;
             if (!screenEnabled) labelVisual.Text = Properties.Strings.VisualModesScreen;
 
@@ -1544,6 +1559,7 @@ namespace GHelper
             if (matrixForm != null && matrixForm.Text != "") matrixForm.Close();
             if (slashForm != null && slashForm.Text != "") slashForm.Close();
             if (handheldForm != null && handheldForm.Text != "") handheldForm.Close();
+            if (overlayForm != null && overlayForm.Text != "") overlayForm.Close();
             if (mouseSettings != null && mouseSettings.Text != "") mouseSettings.Close();
             if (keyboardSettings != null && keyboardSettings.Text != "") keyboardSettings.Close();
             MemoryHelper.TrimAfter();
@@ -1581,6 +1597,7 @@ namespace GHelper
                    (matrixForm != null && matrixForm.ContainsFocus) ||
                    (slashForm != null && slashForm.ContainsFocus) ||
                    (handheldForm != null && handheldForm.ContainsFocus) ||
+                   (overlayForm != null && overlayForm.ContainsFocus) ||
                    this.ContainsFocus ||
                    (lostFocusCheck && Math.Abs(DateTimeOffset.Now.ToUnixTimeMilliseconds() - lastLostFocus) < 300);
         }
@@ -1843,7 +1860,6 @@ namespace GHelper
                 menuOptimized.Visible = buttonOptimized.Visible = false;
                 buttonStopGPU.Visible = true;
                 tableGPU.ColumnCount = 3;
-                tableScreen.ColumnCount = 3;
             }
             else
             {
@@ -1854,7 +1870,6 @@ namespace GHelper
             {
                 menuUltimate.Visible = buttonUltimate.Visible = false;
                 tableGPU.ColumnCount = 3;
-                tableScreen.ColumnCount = 3;
             }
         }
 
