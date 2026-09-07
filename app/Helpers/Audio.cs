@@ -61,6 +61,24 @@ namespace GHelper.Helpers
             }
         }
 
+        // Volume is considered off when the endpoint is muted or turned all the way down
+        public static bool IsVolumeOff()
+        {
+            try
+            {
+                using (var deviceEnumerator = new MMDeviceEnumerator())
+                {
+                    var defaultDevice = deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
+                    return defaultDevice.AudioEndpointVolume.Mute || defaultDevice.AudioEndpointVolume.MasterVolumeLevelScalar <= 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.WriteLine("Error checking volume status: " + ex.Message);
+                return false;
+            }
+        }
+
         public static bool IsMuted()
         {
             try

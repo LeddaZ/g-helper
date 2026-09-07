@@ -1,6 +1,7 @@
 ﻿using GHelper.Gpu;
 using GHelper.Helpers;
 using GHelper.Input;
+using GHelper.Mode;
 using GHelper.Peripherals;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
@@ -58,6 +59,7 @@ namespace GHelper.USB
         ZONETEST = 25,
         AUDIO = 26,
         AUDIOPULSE = 27,
+        STATUS = 28,
     }
 
     public enum AuraSpeed : int
@@ -182,6 +184,7 @@ namespace GHelper.USB
                 modes[AuraMode.Highlight] = "Highlight";
                 modes[AuraMode.Laser] = "Laser";
                 modes[AuraMode.Ripple] = "Ripple";
+                modes[AuraMode.STATUS] = "Status";
             }
 
             modes[AuraMode.AuraStrobe] = Properties.Strings.AuraStrobe;
@@ -287,6 +290,10 @@ namespace GHelper.USB
             else if (Mode == AuraMode.AMBIENT)
             {
                 CustomRGB.ApplyAmbient();
+            }
+            else if (Mode == AuraMode.STATUS)
+            {
+                CustomRGB.ApplyStatus();
             }
         }
 
@@ -420,7 +427,7 @@ namespace GHelper.USB
             {
                 if (!backlight) initDirect = true;
                 backlight = true;
-                if (Mode == AuraMode.GRADIENT) ApplyAura();
+                if (Mode == AuraMode.GRADIENT || Mode == AuraMode.STATUS) ApplyAura();
             }
         }
 
@@ -643,7 +650,8 @@ namespace GHelper.USB
 
         };
 
-        public static void ApplyDirect(Color[] color, bool init = false)
+        // keys : optional per led overrides on top of the zone colors, keyed by led index
+        public static void ApplyDirect(Color[] color, bool init = false, Dictionary<byte, Color>? keys = null)
         {
             if (color is { Length: > 0 })
             {
@@ -655,7 +663,7 @@ namespace GHelper.USB
 
             if (AsusLampArray.Available)
             {
-                AsusLampArray.SetColors(color);
+                AsusLampArray.SetColors(color, keys);
                 return;
             }
 
@@ -696,6 +704,17 @@ namespace GHelper.USB
                     keyBuf[offset + 1] = color[zone].G;
                     keyBuf[offset + 2] = color[zone].B;
                 }
+
+                if (keys is not null)
+                    foreach (var key in keys)
+                    {
+                        ushort offset = (ushort)(3 * key.Key);
+                        if (offset + 2 >= mapSize) continue;
+
+                        keyBuf[offset] = key.Value.R;
+                        keyBuf[offset + 1] = key.Value.G;
+                        keyBuf[offset + 2] = key.Value.B;
+                    }
 
                 for (int i = 0; i < keySet; i += ledsPerPacket)
                 {
@@ -888,6 +907,14 @@ namespace GHelper.USB
             {
                 CustomRGB.ApplyAmbient(true);
                 timer.Interval = AppConfig.Get("aura_refresh", AppConfig.IsStrix() ? 100 : 300);
+                timer.Start();
+                return;
+            }
+
+            if (Mode == AuraMode.STATUS)
+            {
+                CustomRGB.ApplyStatus(true);
+                timer.Interval = 1000;
                 timer.Start();
                 return;
             }
@@ -1090,6 +1117,78 @@ namespace GHelper.USB
             static Color colorUltimate = ColorTranslator.FromHtml(AppConfig.GetString("color_ultimate", "#FF0000"));
             static Color colorStandard = ColorTranslator.FromHtml(AppConfig.GetString("color_standard", "#FFFF00"));
             static Color colorEco = ColorTranslator.FromHtml(AppConfig.GetString("color_eco", "#008000"));
+
+            const byte NO_ZONE = 0xFF;
+
+            // "x,y" : led index of the volume mute key and of the mic mute key
+            static byte[] audioStatusZones = ParseZones("audio_status_zones", "23,4", 2);
+            // led index (or indexes, some models have two) of the performance mode key
+            static byte[] perfStatusZones = ParseZones("perf_status_zones", "6");
+
+            static Color colorMuted = ColorTranslator.FromHtml(AppConfig.GetString("color_muted", "#FF0000"));
+
+            static Color colorPerfEco = ColorTranslator.FromHtml(AppConfig.GetString("color_perf_eco", "#00FF00"));
+            static Color colorPerfStandard = ColorTranslator.FromHtml(AppConfig.GetString("color_perf_standard", "#0000FF"));
+            static Color colorPerfTurbo = ColorTranslator.FromHtml(AppConfig.GetString("color_perf_turbo", "#FF0000"));
+            static Color colorPerfCustom = ColorTranslator.FromHtml(AppConfig.GetString("color_perf_custom", "#800080"));
+
+            static bool statusMuted, statusMicMuted;
+            static int statusPerfMode = -1;
+
+            // Comma separated led indexes, unset ones fall back to NO_ZONE
+            // count > 0 pins the amount of zones, so that their position keeps its meaning
+            static byte[] ParseZones(string name, string empty, int count = 0)
+            {
+                var parts = AppConfig.GetString(name, empty).Split(',');
+                var zones = new byte[count > 0 ? count : parts.Length];
+
+                for (int i = 0; i < zones.Length; i++)
+                    zones[i] = (i < parts.Length && byte.TryParse(parts[i].Trim(), out byte zone)) ? zone : NO_ZONE;
+
+                return zones;
+            }
+
+            static Color PerfColor(int perfMode)
+            {
+                if (perfMode > AsusACPI.PerformanceSilent) return colorPerfCustom;
+
+                switch (perfMode)
+                {
+                    case AsusACPI.PerformanceSilent:
+                        return colorPerfEco;
+                    case AsusACPI.PerformanceTurbo:
+                        return colorPerfTurbo;
+                    default:
+                        return colorPerfStandard;
+                }
+            }
+
+            // Static color on all zones, with the mute keys turning red while muted
+            // and the performance mode key following the current mode
+            public static void ApplyStatus(bool init = false)
+            {
+                if (!backlight) return;
+
+                bool muted = Audio.IsVolumeOff();
+                bool micMuted = Audio.IsMicMuted();
+                int perfMode = Modes.GetCurrent();
+
+                if (!init && muted == statusMuted && micMuted == statusMicMuted && perfMode == statusPerfMode) return;
+
+                statusMuted = muted;
+                statusMicMuted = micMuted;
+                statusPerfMode = perfMode;
+
+                var keys = new Dictionary<byte, Color>();
+                if (muted && audioStatusZones[0] != NO_ZONE) keys[audioStatusZones[0]] = colorMuted;
+                if (micMuted && audioStatusZones[1] != NO_ZONE) keys[audioStatusZones[1]] = colorMuted;
+
+                Color perfColor = PerfColor(perfMode);
+                foreach (byte zone in perfStatusZones)
+                    if (zone != NO_ZONE) keys[zone] = perfColor;
+
+                ApplyDirect(Enumerable.Repeat(Aura.Color1, AURA_ZONES).ToArray(), init, keys);
+            }
 
             public static void ApplyGradient()
             {
