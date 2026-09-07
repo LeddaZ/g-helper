@@ -1,4 +1,4 @@
-using GHelper.Helpers;
+﻿using GHelper.Helpers;
 using HidSharp;
 using HidSharp.Reports;
 using System.Drawing;
@@ -184,7 +184,7 @@ public static class AsusLampArray
     {
         if (!Available) return;
         bool streaming = mode is AuraMode.HEATMAP or AuraMode.AMBIENT or AuraMode.GRADIENT
-            or AuraMode.ZONETEST or AuraMode.AUDIO or AuraMode.AUDIOPULSE;
+            or AuraMode.ZONETEST or AuraMode.AUDIO or AuraMode.AUDIOPULSE or AuraMode.STATUS;
         if (streaming) controlled = false;
         else Reset();
     }
@@ -217,7 +217,8 @@ public static class AsusLampArray
     }
 
     // zones: 8-zone g-helper colors (0-3 keyboard left->right, 4-7 lightbar left->right)
-    public static void SetColors(Color[] zones)
+    // keys: optional per lamp overrides, keyed by lamp index
+    public static void SetColors(Color[] zones, Dictionary<byte, Color>? keys = null)
     {
         if (!Available || !Reopen() || zones.Length < 8) return;
         if (!controlled) Control();
@@ -225,6 +226,11 @@ public static class AsusLampArray
         var arr = new Color[lamps.Length];
         for (int i = 0; i < lamps.Length; i++)
             arr[i] = Blend(zones, lamps[i].Zone, lamps[i].T);
+
+        if (keys is not null)
+            foreach (var key in keys)
+                if (key.Key < arr.Length) arr[key.Key] = key.Value;
+
         SendMulti(arr);
     }
 
