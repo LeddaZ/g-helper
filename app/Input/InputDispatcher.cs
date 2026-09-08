@@ -327,7 +327,7 @@ namespace GHelper.Input
 
         static void SetBrightnessDimming(int delta)
         {
-            int brightness = VisualControl.SetBrightness(delta: delta);
+            int brightness = VisualControl.SetBrightness(delta: Math.Sign(delta) * AppConfig.Get("brightness_step", 10));
             if (brightness >= 0)
                 Program.toast.RunToast(brightness + "%", (delta < 0) ? ToastIcon.BrightnessDown : ToastIcon.BrightnessUp);
         }
