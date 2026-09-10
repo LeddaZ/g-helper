@@ -505,7 +505,6 @@ namespace GHelper
             toolTip.SetToolTip(checkStandbyNetworking, Properties.Strings.DisableStandbyNetworkingTooltip);
 
             InitCores();
-            InitServices();
             InitHibernate();
             InitVramMem();
 
@@ -758,9 +757,16 @@ namespace GHelper
 
         private void InitServices()
         {
+            buttonServices.Enabled = false;
+            Task.Run(() =>
+            {
+                int servicesCount = AsusService.GetRunningCount();
+                if (!IsDisposed) Invoke(() => VisualiseServices(servicesCount));
+            });
+        }
 
-            int servicesCount = AsusService.GetRunningCount();
-
+        private void VisualiseServices(int servicesCount)
+        {
             if (servicesCount > 0)
             {
                 buttonServices.Text = Properties.Strings.Stop;
@@ -947,6 +953,7 @@ namespace GHelper
             }
 
             Left = Program.settingsForm.Left - Width - 5;
+            InitServices();
         }
 
 

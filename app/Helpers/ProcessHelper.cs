@@ -214,7 +214,7 @@ namespace GHelper.Helpers
             cmd.StartInfo.RedirectStandardOutput = true;
             cmd.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
             cmd.StartInfo.FileName = (name == "powershell") ? Path.Combine(Environment.SystemDirectory, @"WindowsPowerShell\v1.0\powershell.exe") : name;
-            cmd.StartInfo.Arguments = args;
+            cmd.StartInfo.Arguments = (name == "powershell") ? "-NoProfile " + args : args;
             if (directory != null) cmd.StartInfo.WorkingDirectory = directory;
             cmd.Start();
 
