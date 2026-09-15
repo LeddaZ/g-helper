@@ -1118,7 +1118,6 @@ namespace GHelper
         {
             if (InvokeRequired) { Invoke(() => VisualiseMatrixRunning(mode)); return; }
             comboMatrixRunning.SelectedIndex = mode;
-            if (comboMatrix.SelectedIndex == 0) comboMatrix.SelectedIndex = 3;
         }
 
         public void SetMatrixRunning(int mode)
@@ -1576,6 +1575,7 @@ namespace GHelper
             this.Activate();
             this.TopMost = true;
             this.TopMost = AppConfig.Is("topmost");
+            if (TopMost) User32.SetWindowPos(Handle, -1, 0, 0, 0, 0, 0x0001 | 0x0002 | 0x0010);
         }
 
         public DialogResult ShowMessage(string text, string title = "", MessageBoxButtons buttons = MessageBoxButtons.OK)
