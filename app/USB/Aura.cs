@@ -985,6 +985,7 @@ namespace GHelper.USB
 
             PeripheralsProvider.SyncMiceWithKeyboardAura();
             PeripheralsProvider.SyncKeyboardsWithAura();
+            PeripheralsProvider.SyncHeadsetsWithAura();
 
             AsusHid.Write(new List<byte[]> { AuraMessage(Mode, _Color1, _Color2, _speed, _direction), MESSAGE_SET, MESSAGE_APPLY }, "Aura", AsusHid.MAIN_AURA_PIDS);
             XGM.LightMode(Mode, _Color1, _Color2, _speed, _direction);
