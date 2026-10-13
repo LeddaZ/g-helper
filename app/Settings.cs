@@ -1652,7 +1652,17 @@ namespace GHelper
             string battery = "";
             string charge = "";
 
-            await Task.Run(() => HardwareControl.ReadSensors());
+            // RefreshSensors is async void, so anything escaping here is rethrown on the
+            // thread pool (Task.ThrowAsync) and kills the process - AppDomain.UnhandledException
+            // only logs, it cannot stop termination. A tray app must survive a bad sensor read.
+            try
+            {
+                await Task.Run(() => HardwareControl.ReadSensors());
+            }
+            catch (Exception ex)
+            {
+                Logger.WriteLine("Sensor read failed: " + ex.Message);
+            }
             if (Visible) _ = Task.Run((Action)PeripheralsProvider.RefreshBatteryForAllDevices);
 
             if (HardwareControl.cpuTemp > 0)
