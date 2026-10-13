@@ -8,6 +8,7 @@ using GHelper.Helpers;
 using System.Diagnostics;
 using System.Management;
 using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
 
 public static class HardwareControl
 {
@@ -456,10 +457,7 @@ public static class HardwareControl
 
         if (cpuTemp < 0) try
         {
-            if (_cpuTempCounter == null)
-                _cpuTempCounter = new PerformanceCounter("Thermal Zone Information", "Temperature", @"\_TZ.THRM", true);
-
-            cpuTemp = _cpuTempCounter.NextValue() - 273;
+            cpuTemp = ReadThermalZoneTemp();
         }
         catch (Exception)
         {
@@ -468,6 +466,21 @@ public static class HardwareControl
 
 
         return cpuTemp;
+    }
+
+    // Kept out of GetCPUTemp so that method JITs without resolving
+    // System.Diagnostics.PerformanceCounter. A .NET servicing update deletes the
+    // shared-framework folder a running process is pinned to, and the assembly then
+    // fails to load - at JIT time, which is before the try above is entered, so the
+    // catch never sees it and the process dies instead (event 1026, 2026-10-13).
+    // Behind a non-inlined call the load failure lands inside the catch.
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static float ReadThermalZoneTemp()
+    {
+        if (_cpuTempCounter == null)
+            _cpuTempCounter = new PerformanceCounter("Thermal Zone Information", "Temperature", @"\_TZ.THRM", true);
+
+        return _cpuTempCounter.NextValue() - 273;
     }
 
     static double GetCPUTempWMI()
@@ -520,31 +533,84 @@ public static class HardwareControl
         return gpuTemp;
     }
 
-    private static PerformanceCounter? _cpuPowerCounter;
     private static bool _cpuPowerCounterFailed;
     private static bool _cpuPowerInitStarted;
     private static int _cpuPowerNullTicks;
     private static int _cpuPowerReadErrors;
     private const int CpuPowerMaxReadErrors = 3;
-    private static readonly string[] _powerCounterInstances = { "Apu Power", "RAPL_Package0_PKG", "CPU Power", "Socket Power", "Current Socket Power" };
 
-    public static void InitCPUPowerAsync()
+    // Plain-bool mirrors of PerfCounters' state, so the sensor path can decide whether
+    // to call in without touching a PerformanceCounter-typed member itself.
+    private static bool _cpuPowerReady;
+    private static bool _coresReady;
+    private static bool _energyChannelsReady;
+
+    // Every PerformanceCounter lives behind this class and every entry point is
+    // NoInlining, so no method on the sensor path carries the type in its own IL.
+    // A .NET servicing update deletes the shared-framework folder a running process is
+    // pinned to, and the assembly then fails to load at JIT time - before the calling
+    // method's try block is entered, so an ordinary catch never sees it and the process
+    // dies (event 1026, 2026-10-13). One non-inlined call away, the failure lands inside
+    // the caller's catch and degrades to "no reading" instead.
+    private static class PerfCounters
     {
-        if (_cpuPowerInitStarted) return;
-        _cpuPowerInitStarted = true;
+        private static readonly string[] Instances = { "Apu Power", "RAPL_Package0_PKG", "CPU Power", "Socket Power", "Current Socket Power" };
 
-        Task.Run(() =>
+        private static PerformanceCounter? _cpuPower;
+        private static List<PerformanceCounter>? _cores;
+        private static EnergyChannel? _cpuChannel, _apuChannel;
+
+        // Power sample: raw = cumulative picowatt-hours, base = 32-bit time in 3.6 µs units, both from one measurement
+        private class EnergyChannel
+        {
+            private readonly PerformanceCounter _power;
+            private long _rawEnergy, _rawTime;
+            private float _watts;
+            private int _stale;
+
+            public EnergyChannel(string instance)
+            {
+                _power = new PerformanceCounter("Energy Meter", "Power", instance, true);
+                var s = _power.NextSample();
+                _rawEnergy = s.RawValue;
+                _rawTime = s.BaseValue;
+            }
+
+            public float? Sample()
+            {
+                try
+                {
+                    var s = _power.NextSample();
+                    long e = s.RawValue, t = s.BaseValue;
+                    if (t != _rawTime)
+                    {
+                        _watts = (e - _rawEnergy) / 1000f / (uint)(t - _rawTime);
+                        _rawEnergy = e;
+                        _rawTime = t;
+                        _stale = 0;
+                    }
+                    else if (++_stale >= 5)
+                        return null;
+                    return _watts > 0 ? _watts : null;
+                }
+                catch { return null; }
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public static void Discover(bool isAMDiGPU)
         {
             if (isAMDiGPU && _cpuChannel is null)
                 try
                 {
                     _apuChannel = new EnergyChannel("Apu Power");
                     _cpuChannel = new EnergyChannel("CPU Power");
+                    _energyChannelsReady = true;
                     Logger.WriteLine("Power source: Energy Meter APU/CPU channels");
                 }
                 catch { }
 
-            if (isAMDiGPU && _coreCounters is null)
+            if (isAMDiGPU && _cores is null)
                 try
                 {
                     var names = new PerformanceCounterCategory("Energy Meter").GetInstanceNames();
@@ -557,7 +623,8 @@ public static class HardwareControl
                     }
                     if (cores.Count > 0)
                     {
-                        _coreCounters = cores;
+                        _cores = cores;
+                        _coresReady = true;
                         Logger.WriteLine($"CPU Power source: {cores.Count} RAPL cores");
                     }
                 }
@@ -572,7 +639,8 @@ public static class HardwareControl
                 {
                     var counter = new PerformanceCounter("Energy Meter", "Power", cached, true);
                     counter.NextValue();
-                    _cpuPowerCounter = counter;
+                    _cpuPower = counter;
+                    _cpuPowerReady = true;
                     Logger.WriteLine("CPU Power source (cached): " + cached);
                     return;
                 }
@@ -587,13 +655,14 @@ public static class HardwareControl
                 var category = new PerformanceCounterCategory("Energy Meter");
                 var instances = category.GetInstanceNames();
 
-                foreach (var name in _powerCounterInstances)
+                foreach (var name in Instances)
                 {
                     if (instances.Contains(name, StringComparer.OrdinalIgnoreCase))
                     {
                         var counter = new PerformanceCounter("Energy Meter", "Power", name, true);
                         counter.NextValue();
-                        _cpuPowerCounter = counter;
+                        _cpuPower = counter;
+                        _cpuPowerReady = true;
                         AppConfig.Set("cpu_power_counter", name);
                         Logger.WriteLine("CPU Power source: " + name);
                         return;
@@ -606,84 +675,105 @@ public static class HardwareControl
             {
                 _cpuPowerCounterFailed = true;
             }
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public static float ReadCpuPower() => _cpuPower?.NextValue() ?? 0f;
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public static void DropCpuPower()
+        {
+            _cpuPower?.Dispose();
+            _cpuPower = null;
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public static float ReadCoresPower()
+        {
+            var counters = _cores;
+            if (counters is null) return 0f;
+
+            float mW = 0;
+            foreach (var counter in counters) mW += counter.NextValue();
+            return mW;
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public static void DropCores() => _cores = null;
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public static float? SampleCpuChannel() => _cpuChannel?.Sample();
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public static float? SampleApuChannel() => _apuChannel?.Sample();
+    }
+
+    public static void InitCPUPowerAsync()
+    {
+        if (_cpuPowerInitStarted) return;
+        _cpuPowerInitStarted = true;
+
+        Task.Run(() =>
+        {
+            try { PerfCounters.Discover(isAMDiGPU); }
+            catch (Exception ex)
+            {
+                _cpuPowerCounterFailed = true;
+                Logger.WriteLine("CPU power counters unavailable: " + ex.Message);
+            }
         });
     }
 
-    private static List<PerformanceCounter>? _coreCounters;
-
-    // Power sample: raw = cumulative picowatt-hours, base = 32-bit time in 3.6 µs units, both from one measurement
-    private class EnergyChannel
-    {
-        private readonly PerformanceCounter _power;
-        private long _rawEnergy, _rawTime;
-        private float _watts;
-        private int _stale;
-
-        public EnergyChannel(string instance)
-        {
-            _power = new PerformanceCounter("Energy Meter", "Power", instance, true);
-            var s = _power.NextSample();
-            _rawEnergy = s.RawValue;
-            _rawTime = s.BaseValue;
-        }
-
-        public float? Sample()
-        {
-            try
-            {
-                var s = _power.NextSample();
-                long e = s.RawValue, t = s.BaseValue;
-                if (t != _rawTime)
-                {
-                    _watts = (e - _rawEnergy) / 1000f / (uint)(t - _rawTime);
-                    _rawEnergy = e;
-                    _rawTime = t;
-                    _stale = 0;
-                }
-                else if (++_stale >= 5)
-                    return null;
-                return _watts > 0 ? _watts : null;
-            }
-            catch { return null; }
-        }
-    }
-
-    private static EnergyChannel? _cpuChannel, _apuChannel;
-
     private static float? GetCoresPower()
     {
-        var counters = _coreCounters;
-        if (counters is null) return null;
+        if (!_coresReady) return null;
+
         try
         {
-            float mW = 0;
-            foreach (var counter in counters) mW += counter.NextValue();
+            float mW = PerfCounters.ReadCoresPower();
             return mW > 0 ? mW / 1000f : null;
         }
         catch
         {
-            _coreCounters = null;
+            _coresReady = false;
+            try { PerfCounters.DropCores(); } catch { }
             return null;
         }
     }
 
+    private static float? SampleCpuChannel()
+    {
+        if (!_energyChannelsReady) return null;
+        try { return PerfCounters.SampleCpuChannel(); }
+        catch { _energyChannelsReady = false; return null; }
+    }
+
+    private static float? SampleApuChannel()
+    {
+        if (!_energyChannelsReady) return null;
+        try { return PerfCounters.SampleApuChannel(); }
+        catch { _energyChannelsReady = false; return null; }
+    }
+
     public static float? GetCPUPower()
     {
-        if (_cpuPowerCounterFailed || _cpuPowerCounter == null) return null;
+        if (_cpuPowerCounterFailed || !_cpuPowerReady) return null;
 
         try
         {
-            float mW = _cpuPowerCounter.NextValue();
+            float mW = PerfCounters.ReadCpuPower();
             if (mW > 0) return mW / 1000f;
         }
         catch
         {
-            // Counter became invalid (e.g. after a fullscreen game exits on Intel).
-            // Allow a few re-init attempts, then give up so we don't spawn a Task.Run
-            // every second forever on machines where the counter is permanently broken.
+            // Counter became invalid (e.g. after a fullscreen game exits on Intel), or the
+            // framework assembly went away under a .NET servicing update. Allow a few
+            // re-init attempts, then give up so we don't spawn a Task.Run every second
+            // forever on machines where the counter is permanently broken.
             // ResetCPUPowerCounter() on overlay toggle gives it another fresh chance.
-            _cpuPowerCounter?.Dispose();
-            _cpuPowerCounter = null;
+            _cpuPowerReady = false;
+            try { PerfCounters.DropCpuPower(); } catch { }
+
             if (++_cpuPowerReadErrors >= CpuPowerMaxReadErrors)
             {
                 _cpuPowerCounterFailed = true;
@@ -916,9 +1006,9 @@ public static class HardwareControl
 
             if (isAMDiGPU && GpuControl is null)
             {
-                float? apu = _apuChannel?.Sample();
+                float? apu = SampleApuChannel();
                 if (apu > 0) newCpu = apu;
-                float? cores = _cpuChannel?.Sample() ?? GetCoresPower();
+                float? cores = SampleCpuChannel() ?? GetCoresPower();
                 if (cores > 0 && newCpu > cores)
                 {
                     iGpuPower = newCpu - cores;

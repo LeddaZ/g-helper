@@ -229,10 +229,27 @@ namespace GHelper.Overlay
         private const uint SWP_NOSIZE = 0x0001;
         private const uint SWP_NOACTIVATE = 0x0010;
 
+        private static bool _tickFailed;
+
         public HardwareOverlay()
         {
             Alpha = 255;
-            _timer.Elapsed += (_, _) => Tick();
+            _timer.Elapsed += (_, _) =>
+            {
+                // System.Timers.Timer stopped swallowing handler exceptions on .NET Core,
+                // so anything escaping Tick terminates the process. ReadSensorsOverlay still
+                // touches PerformanceCounter for CPU power, which can fail to load after a
+                // .NET servicing update. Log once, keep ticking.
+                try { Tick(); }
+                catch (Exception ex)
+                {
+                    if (!_tickFailed)
+                    {
+                        _tickFailed = true;
+                        Logger.WriteLine("Overlay tick failed: " + ex);
+                    }
+                }
+            };
         }
 
         private const int WM_NCDESTROY = 0x0082;
