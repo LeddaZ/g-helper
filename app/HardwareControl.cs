@@ -8,6 +8,7 @@ using GHelper.Helpers;
 using System.Diagnostics;
 using System.Management;
 using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
 
 public static class HardwareControl
 {
@@ -456,10 +457,7 @@ public static class HardwareControl
 
         if (cpuTemp < 0) try
         {
-            if (_cpuTempCounter == null)
-                _cpuTempCounter = new PerformanceCounter("Thermal Zone Information", "Temperature", @"\_TZ.THRM", true);
-
-            cpuTemp = _cpuTempCounter.NextValue() - 273;
+            cpuTemp = ReadThermalZoneTemp();
         }
         catch (Exception)
         {
@@ -468,6 +466,21 @@ public static class HardwareControl
 
 
         return cpuTemp;
+    }
+
+    // Kept out of GetCPUTemp so that method JITs without resolving
+    // System.Diagnostics.PerformanceCounter. A .NET servicing update deletes the
+    // shared-framework folder a running process is pinned to, and the assembly then
+    // fails to load - at JIT time, which is before the try above is entered, so the
+    // catch never sees it and the process dies instead (event 1026, 2026-10-13).
+    // Behind a non-inlined call the load failure lands inside the catch.
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static float ReadThermalZoneTemp()
+    {
+        if (_cpuTempCounter == null)
+            _cpuTempCounter = new PerformanceCounter("Thermal Zone Information", "Temperature", @"\_TZ.THRM", true);
+
+        return _cpuTempCounter.NextValue() - 273;
     }
 
     static double GetCPUTempWMI()
