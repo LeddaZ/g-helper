@@ -539,6 +539,8 @@ namespace GHelper.Peripherals
             DetectMouse(new TUFGamingMiniMikuWired());
             DetectMouse(new Pugio());
             DetectMouse(new MD200());
+            DetectMouse(new MD301());
+            DetectMouse(new MD301Wired());
             DetectMouse(new BalteusQi());
             DetectMouse(new Balteus());
             DetectMouse(new BulwarkDock());
@@ -834,7 +836,10 @@ namespace GHelper.Peripherals
             DetectAllAsusMice();
             DetectAllAsusKeyboards();
             DetectAllAsusHeadsets();
-            if (AppConfig.IsDetachableKeyboard()) Program.inputDispatcher.Init();
+            if (AppConfig.IsDetachableKeyboard()) {
+                Program.inputDispatcher.Init();
+                Input.InputDispatcher.InitFNLock();
+            }
             XGM.Init();
         }
     }
