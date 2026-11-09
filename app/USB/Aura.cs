@@ -406,7 +406,7 @@ namespace GHelper.USB
             IsOldStrix = feat1 == 0 && AppConfig.IsStrix();
             if (IsOldStrix) feat1 = FEAT1_LOGO | FEAT1_LIGHTBAR;
             HasLogo = (feat1 & FEAT1_LOGO) != 0 || AppConfig.IsZ13();
-            HasLightbar = (feat1 & FEAT1_LIGHTBAR) != 0;
+            HasLightbar = (feat1 & (FEAT1_LIGHTBAR | FEAT1_LOGO)) != 0;
             HasRearglow = (feat1 & (FEAT1_REARGLOW | FEAT1_VCUT)) != 0;
             hasRearStrip = (feat1 & FEAT1_REARGLOW) != 0;
 
@@ -818,7 +818,11 @@ namespace GHelper.USB
 
         public static (List<KeyDef[]> Rows, int[] Targets) KeyLayout()
         {
-            if (LampLayout) return AuraKeyboardLayouts.FromLamps(AsusLampArray.Lamps());
+            if (LampLayout)
+            {
+                var lamps = AsusLampArray.Lamps();
+                return AuraKeyboardLayouts.MapLamps(AuraKeyboardLayouts.Laptop(null, isIso), lamps) ?? AuraKeyboardLayouts.FromLamps(lamps);
+            }
 
             var layout = AuraKeyboardLayouts.Laptop(KeyLayoutName, isIso);
             return (layout.Rows, isStrix4Zone ? AuraKeyboardLayouts.Zones(layout.Rows) : Array.ConvertAll(layout.LedIds, id => (int)id));
