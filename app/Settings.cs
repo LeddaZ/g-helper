@@ -752,6 +752,10 @@ namespace GHelper
 
         protected override void WndProc(ref Message m)
         {
+            // Diagnostics for silent external kills: WM_CLOSE / WM_QUERYENDSESSION / WM_ENDSESSION.
+            // lParam 0x1 = ENDSESSION_CLOSEAPP (installer / Restart Manager asking the app to close).
+            if (m.Msg == 0x0010 || m.Msg == 0x0011 || m.Msg == 0x0016)
+                Logger.WriteLine($"WndProc msg=0x{m.Msg:X4} wParam=0x{(long)m.WParam:X} lParam=0x{(long)m.LParam:X}");
 
             if (m.Msg == NativeMethods.WM_POWERBROADCAST && m.WParam == (IntPtr)NativeMethods.PBT_APMSUSPEND)
             {
