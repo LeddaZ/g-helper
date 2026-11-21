@@ -56,6 +56,7 @@ namespace GHelper
             Text = Properties.Strings.FansAndPower;
             labelPowerLimits.Text = Properties.Strings.PowerLimits;
             checkApplyPower.Text = Properties.Strings.ApplyPowerLimits;
+            checkTransparency.Text = Properties.Strings.DisableTransparency;
 
             labelFans.Text = "BIOS " + Properties.Strings.FanCurves;
             labelBoost.Text = Properties.Strings.CPUBoost;
@@ -196,6 +197,7 @@ namespace GHelper
 
             checkApplyFans.Click += CheckApplyFans_Click;
             checkApplyPower.Click += CheckApplyPower_Click;
+            checkTransparency.Click += CheckTransparency_Click;
 
             trackGPUClockLimit.Minimum = NvidiaGpuControl.MinClockLimit;
             trackGPUClockLimit.Maximum = NvidiaGpuControl.MaxClockLimit;
@@ -998,6 +1000,12 @@ namespace GHelper
 
         }
 
+        private void CheckTransparency_Click(object? sender, EventArgs e)
+        {
+            TransparencyControl.SetDisabledForMode(checkTransparency.Checked);
+            Task.Run(TransparencyControl.Apply);
+        }
+
         private void CheckApplyFans_Click(object? sender, EventArgs e)
         {
             if (sender is null) return;
@@ -1089,6 +1097,7 @@ namespace GHelper
             }
 
             checkApplyPower.Checked = AppConfig.IsApplyPower();
+            checkTransparency.Checked = TransparencyControl.IsDisabledForMode();
 
             int limit_total = AppConfig.GetMode("limit_total", AsusACPI.DefaultTotal);
             int limit_slow = AppConfig.GetMode("limit_slow", limit_total);

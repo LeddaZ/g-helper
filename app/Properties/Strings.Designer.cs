@@ -248,6 +248,15 @@ namespace GHelper.Properties {
                 return ResourceManager.GetString("ApplyPowerLimits", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Disable Transparency.
+        /// </summary>
+        internal static string DisableTransparency {
+            get {
+                return ResourceManager.GetString("DisableTransparency", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Auto adjust Windows Power Modes.

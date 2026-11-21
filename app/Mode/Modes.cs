@@ -30,6 +30,7 @@
             { "auto_boost", "int" },
             { "auto_apply", "int" },
             { "auto_apply_power", "int" },
+            { "disable_transparency", "int" },
             { "auto_uv", "_" },
             { "hysteresis_up", "int" },
             { "hysteresis_down", "int" }

@@ -196,6 +196,9 @@ namespace GHelper.Mode
                 if (AppConfig.IsAutoStandbyNetworking()) PowerNative.SetConnectivityInStandby();
             }
 
+            // Off the UI thread: the settings-change broadcast can stall on slow windows
+            Task.Run(TransparencyControl.Apply);
+
             // CPU Boost setting override
             if (AppConfig.GetMode("auto_boost") != -1)
                     PowerNative.SetCPUBoost(AppConfig.GetMode("auto_boost"));

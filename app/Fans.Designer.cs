@@ -103,6 +103,8 @@ namespace GHelper
             panelPower = new Panel();
             panelApplyPower = new Panel();
             checkApplyPower = new RCheckBox();
+            panelTransparency = new Panel();
+            checkTransparency = new RCheckBox();
             panelCPU = new Panel();
             labelCPU = new Label();
             labelLeftCPU = new Label();
@@ -209,6 +211,7 @@ namespace GHelper
             panelPawnIO.SuspendLayout();
             panelPower.SuspendLayout();
             panelApplyPower.SuspendLayout();
+            panelTransparency.SuspendLayout();
             panelCPU.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)trackCPU).BeginInit();
             panelFast.SuspendLayout();
@@ -1078,6 +1081,7 @@ namespace GHelper
             panelPower.AutoSize = true;
             panelPower.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             panelPower.Controls.Add(panelApplyPower);
+            panelPower.Controls.Add(panelTransparency);
             panelPower.Controls.Add(panelCPUTemp);
             panelPower.Controls.Add(panelGPUtoCPU);
             panelPower.Controls.Add(panelCrossLoad);
@@ -1120,6 +1124,30 @@ namespace GHelper
             checkApplyPower.TabIndex = 45;
             checkApplyPower.Text = "Apply Power Limits";
             checkApplyPower.UseVisualStyleBackColor = false;
+            //
+            // panelTransparency
+            //
+            panelTransparency.AutoSize = true;
+            panelTransparency.Controls.Add(checkTransparency);
+            panelTransparency.Dock = DockStyle.Top;
+            panelTransparency.Location = new Point(0, 743);
+            panelTransparency.Name = "panelTransparency";
+            panelTransparency.Padding = new Padding(15, 15, 15, 0);
+            panelTransparency.Size = new Size(520, 61);
+            panelTransparency.TabIndex = 10;
+            //
+            // checkTransparency
+            //
+            checkTransparency.BackColor = SystemColors.ControlLight;
+            checkTransparency.Dock = DockStyle.Top;
+            checkTransparency.Location = new Point(15, 15);
+            checkTransparency.Margin = new Padding(0);
+            checkTransparency.Name = "checkTransparency";
+            checkTransparency.Padding = new Padding(16, 6, 16, 6);
+            checkTransparency.Size = new Size(490, 46);
+            checkTransparency.TabIndex = 44;
+            checkTransparency.Text = "Disable Transparency";
+            checkTransparency.UseVisualStyleBackColor = false;
             // 
             // panelCPU
             // 
@@ -2110,6 +2138,7 @@ namespace GHelper
             panelPower.ResumeLayout(false);
             panelPower.PerformLayout();
             panelApplyPower.ResumeLayout(false);
+            panelTransparency.ResumeLayout(false);
             panelCPU.ResumeLayout(false);
             panelCPU.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)trackCPU).EndInit();
@@ -2241,6 +2270,8 @@ namespace GHelper
         private Panel panelAdvancedReadLimits;
         private RButton buttonReadLimits;
         private Panel panelApplyPower;
+        private Panel panelTransparency;
+        private RCheckBox checkTransparency;
         private Panel panelAdvanced;
         private Panel panelAdvancedApply;
         private Panel panelTitleAdvanced;
